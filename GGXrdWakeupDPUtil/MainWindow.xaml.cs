@@ -183,8 +183,11 @@ setTimeout( function () {
             {
                 idsource.Cancel();
             }
-            if (session != null)
+            if (script != null)
             {
+                script.Post("{\"type\": \"quit\"}");
+                script.Post("{\"type\": \"playback\"}");
+                script.Unload();
                 session.Detach();
             }
         }
@@ -196,41 +199,13 @@ setTimeout( function () {
                 msggprocess = new MemorySharp(System.Diagnostics.Process.GetProcessesByName(ggprocname).First());
                 try
                 {
-                    readAnimString(1);
-                    
+                    checkAndSetFallbacks();
                 }
-                catch (Exception)
+                catch (AccessViolationException ex)
                 {
-                    try
-                    {
-                        readFallbackAnimString(1);
-                        fallbackp1 = true;
-                    }
-                    catch (Exception)
-                    {
-                        MessageBox.Show("You have GG open but are not in training mode!  Open it up and pause the game before starting this program.  This program will now close.");
-                        Application.Current.Shutdown();
-                        return;
-                    }
-                }
-                try
-                {
-                    readAnimString(2);
-
-                }
-                catch (Exception)
-                {
-                    try
-                    {
-                        readFallbackAnimString(2);
-                        fallbackp2 = true;
-                    }
-                    catch (Exception)
-                    {
-                        MessageBox.Show("You have GG open but are not in training mode!  Open it up and pause the game before starting this program.  This program will now close.");
-                        Application.Current.Shutdown();
-                        return;
-                    }
+                    MessageBox.Show(ex.Message);
+                    Application.Current.Shutdown();
+                    return;
                 }
                 setDummyID();
             }
@@ -278,6 +253,43 @@ setTimeout( function () {
             Task.Run(() => updateIDLoop());
         }
 
+        private void checkAndSetFallbacks()
+        {
+            try
+            {
+                readAnimString(1);
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    readFallbackAnimString(1);
+                    fallbackp1 = true;
+                }
+                catch (Exception)
+                {
+                    throw new AccessViolationException("P1 Animation Address Broke.  (for future use)  This program will now close.");
+                }
+            }
+            try
+            {
+                readAnimString(2);
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    readFallbackAnimString(2);
+                    fallbackp2 = true;
+                }
+                catch (Exception)
+                {
+                    throw new AccessViolationException("P2 Animation Address Broke.  This program will now close.");
+                }
+            }
+        }
+
+
         private void Script_Message(object sender, Frida.ScriptMessageEventArgs e)
         {
             var senderscript = (Frida.Script)sender;
@@ -319,7 +331,7 @@ setTimeout( function () {
             return "";
         }
         private string readFallbackAnimString(int player)
-        {
+        { 
             if (player == 1)
             {
                 var addr = (IntPtr)(msggprocess.Read<int>((IntPtr)P1AnimOffsets_fallback[0]));
@@ -340,6 +352,7 @@ setTimeout( function () {
                 }
                 return msggprocess.ReadString(IntPtr.Add(addr, P2AnimOffsets_fallback[6]), false, 32);
             }
+
             return "";
         }
         private void setDummyID()
@@ -407,6 +420,15 @@ setTimeout( function () {
             Slot2R.IsEnabled = false;
             Slot3R.IsEnabled = false;
             disableButton.IsEnabled = true;
+            try
+            {
+                checkAndSetFallbacks();
+            } catch (AccessViolationException ex)
+            {
+                MessageBox.Show(ex.Message);
+                Application.Current.Shutdown();
+                return;
+            }
             session = localdev.Attach((uint)msggprocess.Pid);
             script = session.CreateScript(scriptsrc);
             script.Message += Script_Message;
@@ -441,26 +463,39 @@ setTimeout( function () {
             {
                 while (!token.IsCancellationRequested)
                 {
-                    int wakeuptiming = 0;
-                    if (facedown == readFallbackAnimString(2))
+                    try
                     {
-                        wakeuptiming = nameWakeupDataList[currentDummyId].faceDownFrames;
-                        Task framewait = Task.Run(() => waitFrames(wakeuptiming - wakeupframeidx - 1));
-                        framewait.Wait();
+                        int wakeuptiming = 0;
+                        if (facedown == readFallbackAnimString(2))
+                        {
+                            wakeuptiming = nameWakeupDataList[currentDummyId].faceDownFrames;
+                            Task framewait = Task.Run(() => waitFrames(wakeuptiming - wakeupframeidx - 1));
+                            framewait.Wait();
+                        }
+                        else if (faceup == readFallbackAnimString(2))
+                        {
+                            wakeuptiming = nameWakeupDataList[currentDummyId].faceUpFrames;
+                            Task framewait = Task.Run(() => waitFrames(wakeuptiming - wakeupframeidx - 1));
+                            framewait.Wait();
+                        }
+                        if (wakeuptiming == 0)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            script.Post("{\"type\": \"playback\"}");
+                        }
                     }
-                    else if (faceup == readFallbackAnimString(2))
+                    catch (Exception)
                     {
-                        wakeuptiming = nameWakeupDataList[currentDummyId].faceUpFrames;
-                        Task framewait = Task.Run(() => waitFrames(wakeuptiming - wakeupframeidx - 1));
-                        framewait.Wait();
-                    }
-                    if (wakeuptiming == 0)
-                    {
-                        continue;
-                    }
-                    else
-                    {
+                        MessageBox.Show("P2's animation address broke/has changed while enabled (using fallback address).  This program will now shut down.  If this issue persists, contact me.");
+                        script.Post("{\"type\": \"quit\"}");
                         script.Post("{\"type\": \"playback\"}");
+                        script.Unload();
+                        session.Detach();
+                        Application.Current.Shutdown();
+                        return;
                     }
                 }
             }
@@ -468,31 +503,45 @@ setTimeout( function () {
             {
                 while (!token.IsCancellationRequested)
                 {
-                    int wakeuptiming = 0;
-                    if (facedown == readAnimString(2))
+                    try
                     {
-                        wakeuptiming = nameWakeupDataList[currentDummyId].faceDownFrames;
-                        Task framewait = Task.Run(() => waitFrames(wakeuptiming - wakeupframeidx - 1));
-                        framewait.Wait();
+                        int wakeuptiming = 0;
+                        if (facedown == readAnimString(2))
+                        {
+                            wakeuptiming = nameWakeupDataList[currentDummyId].faceDownFrames;
+                            Task framewait = Task.Run(() => waitFrames(wakeuptiming - wakeupframeidx - 1));
+                            framewait.Wait();
+                        }
+                        else if (faceup == readAnimString(2))
+                        {
+                            wakeuptiming = nameWakeupDataList[currentDummyId].faceUpFrames;
+                            Task framewait = Task.Run(() => waitFrames(wakeuptiming - wakeupframeidx - 1));
+                            framewait.Wait();
+                        }
+                        if (wakeuptiming == 0)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            script.Post("{\"type\": \"playback\"}");
+                        }
                     }
-                    else if (faceup == readAnimString(2))
+                    catch (Exception)
                     {
-                        wakeuptiming = nameWakeupDataList[currentDummyId].faceUpFrames;
-                        Task framewait = Task.Run(() => waitFrames(wakeuptiming - wakeupframeidx - 1));
-                        framewait.Wait();
-                    }
-                    if (wakeuptiming == 0)
-                    {
-                        continue;
-                    }
-                    else
-                    {
+                        MessageBox.Show("P2's animation address broke/has changed while enabled.  This program will now shut down.  If this issue persists, contact me.");
+                        script.Post("{\"type\": \"quit\"}");
                         script.Post("{\"type\": \"playback\"}");
+                        script.Unload();
+                        session.Detach();
+                        Application.Current.Shutdown();
+                        return;
                     }
                 }
             }
             idsource = new CancellationTokenSource();
             idtoken = idsource.Token;
+            Task.Run(() => updateIDLoop());
         }
 
         
@@ -510,6 +559,7 @@ setTimeout( function () {
             source.Cancel();
             source.Dispose();
             script.Post("{\"type\": \"quit\"}");
+            script.Post("{\"type\": \"playback\"}");
             script.Unload();
             session.Detach();
             enableButton.IsEnabled = true;
