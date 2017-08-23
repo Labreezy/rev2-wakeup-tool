@@ -3,7 +3,7 @@ Revesal-timing inputs for Guilty Gear Xrd: Revelator 2 in training mode.
 
 # How to Use:
 
-1, Open Rev 2, then start training mode, then pause the game.  The pause the game part is mandatory.
+1. Open Rev 2, then start training mode, then pause the game.  The pause the game part is mandatory.
 2. Run the program, make sure it starts up and displays the correct dummy.
 3. The input format is as follows: numpad notation, seperate all inputs with commas, one frame per input, directions before buttons.
 
