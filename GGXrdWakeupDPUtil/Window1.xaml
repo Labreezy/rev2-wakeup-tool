@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GGXrdWakeupDPUtil"
         mc:Ignorable="d"
-        Title="GGXrd Rev 2 Revesal Tool" Height="450" Width="800" Loaded="Window_Loaded">
+        Title="GGXrd Rev 2 Revesal Tool" Height="450" Width="800" Loaded="Window_Loaded" Closed="Window_Closed">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -23,7 +23,7 @@
                     <RowDefinition Height="Auto"></RowDefinition>
                 </Grid.RowDefinitions>
                 <TextBlock Text="Slot 1"></TextBlock>
-                <TextBox Grid.Row="1" Text="Enter inputs Here"></TextBox>
+                <TextBox x:Name="slot1Input" Grid.Row="1" Text="Enter inputs Here"></TextBox>
                 <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -37,7 +37,7 @@
                         <ColumnDefinition></ColumnDefinition>
                         <ColumnDefinition></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Button>Enable</Button>
+                    <Button Click="Slot1Button_Click">Enable</Button>
                     <Button Grid.Column="1" IsEnabled="False">Disable</Button>
                 </Grid>
             </Grid>

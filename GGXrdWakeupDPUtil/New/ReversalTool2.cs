@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Binarysharp.MemoryManagement;
 
 namespace GGXrdWakeupDPUtil
 {
-    public class ReversalTool2
+    public class ReversalTool2 : IDisposable
     {
         private readonly string _ggprocname = ConfigurationManager.AppSettings.Get("GGProcessName");
 
@@ -41,10 +42,16 @@ namespace GGXrdWakeupDPUtil
             new NameWakeupData("Answer", 24, 24)
         };
 
+        private char FrameDelimiter = ',';
+        private char WakeUpFrameDelimiter = '!';
+        const int WakeupFrameMask = 0x200;
 
         #region Offsets
         private readonly int _p2IdOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2IdOffset"), 16);
+        private readonly int _recordingSlotOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("RecordingSlotOffset"), 16);
         #endregion
+
+        private const int RecordingSlotSize = 4808;
 
 
         private MemorySharp _memorySharp;
@@ -71,5 +78,124 @@ namespace GGXrdWakeupDPUtil
 
             return result;
         }
+
+        #region Dispose Members
+        public void Dispose()
+        {
+            _memorySharp?.Dispose();
+        }
+        #endregion
+
+        public void SetInputInSlot(int slotNumber, string input, int delay)
+        {
+            List<string> inputList = GetInputList(input);
+            int wakeupFrameIndex = inputList.FindLastIndex(x => x.StartsWith(WakeUpFrameDelimiter.ToString()));
+
+            if (wakeupFrameIndex < 0)
+            {
+                throw new Exception("No ! frame specified.  See the readme for more information.");
+            }
+
+            IEnumerable<short> inputShorts = GetInputShorts(inputList);
+
+            OverwriteSlot(slotNumber, inputShorts);
+        }
+
+
+
+
+        #region Private
+        private List<string> GetInputList(string input)
+        {
+            Regex whitespaceregex = new Regex(@"\s+");
+
+            var text = whitespaceregex.Replace(input, "");
+
+            string[] splittext = text.Split(FrameDelimiter);
+
+            return splittext.ToList();
+        }
+
+        private IEnumerable<short> GetInputShorts(List<string> inputList)
+        {
+            List<short> result = inputList.Select(x =>
+            {
+                var value = SingleInputParse(x);
+
+                if (value < 0)
+                {
+                    throw new Exception("Invalid input with input '" + value + "'.  Read the README for formatting information.");
+                }
+
+                return value;
+            }).ToList();
+
+            int wakeupFrameIndex = inputList.FindLastIndex(x => x.StartsWith(WakeUpFrameDelimiter.ToString()));
+
+            result[wakeupFrameIndex] -= WakeupFrameMask;
+
+            return result;
+        }
+
+        private short SingleInputParse(string input)
+        {
+            Regex inputregex = new Regex(WakeUpFrameDelimiter + @"?[1-9]{1}[PKSHD]{0,5}");
+
+            int[] directions = { 0b0110, 0b0010, 0b1010, 0b0100, 0b0000, 0b1000, 0b0101, 0b0001, 0b1001 };
+
+            if (inputregex.IsMatch(input))
+            {
+                var result = 0;
+                if (input[0] == WakeUpFrameDelimiter)
+                {
+                    result += WakeupFrameMask;
+                    input = input.Substring(1);
+                }
+                var direction = Int32.Parse(input.Substring(0, 1));
+                result |= directions[direction - 1];
+                if (input.Length == 1)
+                {
+                    return (short)result;
+                }
+                var buttons = input.Substring(1).ToCharArray();
+                foreach (char button in buttons)
+                {
+                    switch (button)
+                    {
+                        case 'P':
+                            result |= (int)Buttons.P;
+                            break;
+                        case 'K':
+                            result |= (int)Buttons.K;
+                            break;
+                        case 'S':
+                            result |= (int)Buttons.S;
+                            break;
+                        case 'H':
+                            result |= (int)Buttons.H;
+                            break;
+                        case 'D':
+                            result |= (int)Buttons.D;
+                            break;
+                    }
+                }
+                return (short)result;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        private void OverwriteSlot(int slotNumber, IEnumerable<short> inputs)
+        {
+            var addr = _recordingSlotOffset + RecordingSlotSize * slotNumber;
+            var inputList = inputs as short[] ?? inputs.ToArray();
+            var header = new List<short> { 0, 0, (short)inputList.Length, 0 };
+
+            _memorySharp.Write((IntPtr)addr, header.Concat(inputList).ToArray(), false);
+
+        }
+        #endregion
     }
 }

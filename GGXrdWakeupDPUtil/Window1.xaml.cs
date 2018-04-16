@@ -60,6 +60,11 @@ namespace GGXrdWakeupDPUtil
 
             StartDummyLoop();
         }
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            dummyTokenSource?.Cancel();
+            reversalTool?.Dispose();
+        }
 
 
 
@@ -99,6 +104,16 @@ namespace GGXrdWakeupDPUtil
                 dummyTextBlock.Text = $"Current Dummy :{dummy.CharName}";
             });
         }
+
         #endregion
+
+        private void Slot1Button_Click(object sender, RoutedEventArgs e)
+        {
+            int slotNumber = 0;
+            //ReversalType reversalType = ReversalType.WakeUp;
+            int delay = 0;
+            string input = slot1Input.Text;
+            reversalTool.SetInputInSlot(slotNumber, input, delay);
+        }
     }
 }
