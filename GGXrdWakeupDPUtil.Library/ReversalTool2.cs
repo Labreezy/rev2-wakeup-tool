@@ -129,32 +129,14 @@ namespace GGXrdWakeupDPUtil.Library
             return new SlotInput(input, inputShorts, wakeupFrameIndex);
         }
 
-        public int GetWakeupTiming(NameWakeupData currentDummy)
-        {
-            var animationString = this.ReadAnimationString(2);
-
-            if (animationString == FaceDownAnimation)
-            {
-                return currentDummy.FaceDownFrames;
-            }
-            if (animationString == FaceUpAnimation)
-            {
-                return currentDummy.FaceUpFrames;
-            }
-
-            return 0;
-
-        }
+        
 
         public void PlayReversal()
         {
             script.Post("{\"type\": \"playback\"}");
         }
 
-        public int FrameCount()
-        {
-            return _memorySharp.Read<int>(_frameCountOffset);
-        }
+        
 
         public void StartReversalLoop(SlotInput slotInput)
         {
@@ -171,7 +153,7 @@ namespace GGXrdWakeupDPUtil.Library
                 {
 
                     int wakeupTiming = GetWakeupTiming(currentDummy);
-                    
+
 
                     if (wakeupTiming != 0)
                     {
@@ -216,6 +198,25 @@ namespace GGXrdWakeupDPUtil.Library
             {
                 _runReversalThread = false;
             }
+        }
+
+        public bool CheckValidInput(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return false;
+            }
+
+            var inputList = GetInputList(input);
+
+
+
+            return inputList.All(x =>
+            {
+                Regex regex = new Regex(@"!{0,1}[1-9][PKSHD]*(?:,|$)");
+
+                return regex.IsMatch(x);
+            });
         }
 
         #region Private
@@ -377,6 +378,27 @@ namespace GGXrdWakeupDPUtil.Library
 
             }
         }
+
+        private int FrameCount()
+        {
+            return _memorySharp.Read<int>(_frameCountOffset);
+        }
+        private int GetWakeupTiming(NameWakeupData currentDummy)
+        {
+            var animationString = this.ReadAnimationString(2);
+
+            if (animationString == FaceDownAnimation)
+            {
+                return currentDummy.FaceDownFrames;
+            }
+            if (animationString == FaceUpAnimation)
+            {
+                return currentDummy.FaceUpFrames;
+            }
+
+            return 0;
+
+        }
         #endregion
 
         #region Dispose Members
@@ -399,5 +421,7 @@ namespace GGXrdWakeupDPUtil.Library
             session?.Dispose();
         }
         #endregion
+
+
     }
 }

@@ -24,19 +24,14 @@ namespace GGXrdWakeupDPUtil
         public Window1()
         {
             InitializeComponent();
+
+            inputTextBox.TextChanged += inputTextBox_TextChanged;
         }
 
         private ReversalTool2 reversalTool;
 
-        private CancellationTokenSource dummyTokenSource = new CancellationTokenSource();
-        private CancellationToken dummyToken;
-        private NameWakeupData currentDummy;
-        private CancellationTokenSource reversalTokenSource = new CancellationTokenSource();
-        private CancellationToken reversalToken;
-
-        private CancellationTokenSource frameWaitTokenSource = new CancellationTokenSource();
-        private CancellationToken frameWaitToken;
-
+        private static bool _runDummyThread;
+        private static object _runDummyThreadLock = new object();
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -46,123 +41,138 @@ namespace GGXrdWakeupDPUtil
             {
                 reversalTool.AttachToProcess();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                MessageBox.Show($"Process not found!{Environment.NewLine}{ex.Message}");
+                MessageBox.Show($"Guilty Gear not found open!  Remember, be in training mode paused when you open this program.  This program will now close.{Environment.NewLine}{exception.Message}");
                 Application.Current.Shutdown();
                 return;
             }
 
+
             StartDummyLoop();
+
+
         }
         private void Window_Closed(object sender, EventArgs e)
         {
-            dummyTokenSource?.Cancel();
+            StopDummyLoop();
             reversalTool?.Dispose();
         }
-        private void Slot1Button_Click(object sender, RoutedEventArgs e)
+
+        private void enableButton_Click(object sender, RoutedEventArgs e)
         {
             int slotNumber = 0;
-            //ReversalType reversalType = ReversalType.WakeUp;
-            int delay = 0;
-            string input = slot1Input.Text;
 
-            input = "6,2,!3H";
-            var slotInput = reversalTool.SetInputInSlot(slotNumber, input);
+            if (Slot1R.IsChecked != null && Slot1R.IsChecked.Value)
+            {
+                slotNumber = 1;
+            }
+            else if (Slot1R.IsChecked != null && Slot1R.IsChecked.Value)
+            {
+                slotNumber = 2;
+            }
+            else if (Slot1R.IsChecked != null && Slot1R.IsChecked.Value)
+            {
+                slotNumber = 3;
+            }
 
-            StartReversalLoop(slotInput);
+            var slotInput = reversalTool.SetInputInSlot(slotNumber, inputTextBox.Text);
+
+            reversalTool.StartReversalLoop(slotInput);
+
+            enableButton.IsEnabled = false;
+            disableButton.IsEnabled = true;
+            inputTextBox.IsEnabled = false;
         }
 
+        private void disableButton_Click(object sender, RoutedEventArgs e)
+        {
+            enableButton.IsEnabled = true;
+            disableButton.IsEnabled = false;
+            inputTextBox.IsEnabled = true;
+            reversalTool.StopReversalLoop();
+        }
+
+        private void inputTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            CheckValidInput();
+        }
+
+        private void CheckValidInput()
+        {
+            var text = inputTextBox.Text;
+
+            if (string.IsNullOrEmpty(text))
+            {
+                errorTextBlock.Visibility = Visibility.Hidden;
+                enableButton.IsEnabled = false;
+            }
 
 
+
+            bool validInput = reversalTool != null && reversalTool.CheckValidInput(text);
+
+            if (validInput)
+            {
+                errorTextBlock.Visibility = Visibility.Hidden;
+                enableButton.IsEnabled = true;
+            }
+            else
+            {
+                errorTextBlock.Visibility = Visibility.Visible;
+                errorTextBlock.Text = "Invalid Input";
+                enableButton.IsEnabled = false;
+            }
+        }
 
         private void StartDummyLoop()
         {
-            dummyToken = dummyTokenSource.Token;
-
-            Task.Run(() =>
+            lock (_runDummyThreadLock)
             {
-                while (!dummyToken.IsCancellationRequested)
+                _runDummyThread = true;
+            }
+            Thread dummyThread = new Thread(() =>
+            {
+                NameWakeupData currentDummy = null;
+                bool localRunDummyThread = true;
+
+                while (localRunDummyThread)
                 {
                     var dummy = reversalTool.GetDummy();
 
                     if (!Equals(dummy, currentDummy))
                     {
-                        SetUIDummy(dummy);
-
                         currentDummy = dummy;
+
+                        SetDummyName(currentDummy.CharName);
+
                     }
-                    Thread.Sleep(1000);
+
+                    Thread.Sleep(2000);
                 }
 
-            }, dummyToken);
+            });
+
+            dummyThread.Name = "dummyThread";
+            dummyThread.Start();
+
         }
 
-        private void StartReversalLoop(SlotInput slotInput)
+        private void StopDummyLoop()
         {
-            reversalToken = reversalTokenSource.Token;
-
-            Task.Run(() =>
+            lock (_runDummyThreadLock)
             {
-                while (!reversalToken.IsCancellationRequested)
-                {
-                    try
-                    {
-                        int wakeupTiming = reversalTool.GetWakeupTiming(currentDummy);
-
-                        Task framewait = Task.Run(() => WaitFrames(wakeupTiming - slotInput.WakeupFrameIndex - 1), frameWaitToken);
-                        framewait.Wait(frameWaitToken);
-
-                        if (wakeupTiming == 0)
-                        {
-                            continue;
-                        }
-
-                        else
-                        {
-
-                            frameWaitTokenSource = new CancellationTokenSource();
-                            frameWaitToken = frameWaitTokenSource.Token;
-
-
-                            reversalTool.PlayReversal();
-                        }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"P2's animation address broke/has changed while enabled.  This program will now shut down.  If this issue persists, contact me.{Environment.NewLine}{ex.Message}");
-                        Application.Current.Shutdown();
-                        //TODO corriger
-                        return;
-                    }
-                }
-
-            }, reversalToken);
-        }
-
-        private void WaitFrames(int frames)
-        {
-            int fc = reversalTool.FrameCount();
-            while (reversalTool.FrameCount() < fc + frames && !frameWaitToken.IsCancellationRequested)
-            {
-
+                _runDummyThread = false;
             }
         }
 
-
-        //TODO Refactor with MVVM
-        #region UI
-        private void SetUIDummy(NameWakeupData dummy)
+        private void SetDummyName(string dummyName)
         {
             Dispatcher.Invoke(() =>
             {
-                dummyTextBlock.Text = $"Current Dummy :{dummy.CharName}";
+                dummyTextBlock.Text = $"Current Dummy: {dummyName}";
             });
+            
         }
-
-        #endregion
-
-       
     }
 }

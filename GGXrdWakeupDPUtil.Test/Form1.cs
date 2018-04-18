@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Threading;
 using GGXrdWakeupDPUtil.Library;
@@ -33,6 +26,11 @@ namespace GGXrdWakeupDPUtil.Test
             reversalTool = new ReversalTool2(Dispatcher.CurrentDispatcher);
 
             reversalTool.AttachToProcess();
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            reversalTool.Dispose();
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -72,5 +70,7 @@ namespace GGXrdWakeupDPUtil.Test
             button7.Enabled = false;
             reversalTool.StopReversalLoop();
         }
+
+        
     }
 }
