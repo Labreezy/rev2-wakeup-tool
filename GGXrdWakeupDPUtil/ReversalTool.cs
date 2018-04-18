@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Binarysharp.MemoryManagement;
+using GGXrdWakeupDPUtil.Library;
 
 namespace GGXrdWakeupDPUtil
 {

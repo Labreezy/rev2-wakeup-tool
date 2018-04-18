@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="GGXrd Rev 2 Revesal Tool" Height="417.537" Width="320">
     <Grid>
-        <TextBox x:Name="inputTextBox" HorizontalAlignment="Left" Height="209" Margin="10,62,0,0" TextWrapping="Wrap" Text="Enter Inputs Here" VerticalAlignment="Top" Width="292"/>
+        <TextBox x:Name="inputTextBox" HorizontalAlignment="Left" Height="209" Margin="10,62,0,0" TextWrapping="Wrap" Text="6,2,!3H" VerticalAlignment="Top" Width="292"/>
         <Button x:Name="enableButton" Content="Enable" HorizontalAlignment="Left" Height="30" Margin="10,276,0,0" VerticalAlignment="Top" Width="125" Click="enableButton_Click" RenderTransformOrigin="0.49,-1.63"/>
         <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="71,10,0,0" TextWrapping="Wrap" Text="GGXrd Rev 2 Reversal Tool" VerticalAlignment="Top"/>
         <Button x:Name="disableButton" Content="Disable" HorizontalAlignment="Left" Margin="177,276,0,0" VerticalAlignment="Top" Width="125" Height="30" IsEnabled="False" Click="disableButton_Click"/>
@@ -16,6 +16,7 @@
         <RadioButton x:Name="Slot2R" Content="Slot 2" HorizontalAlignment="Left" Margin="126,344,0,0" VerticalAlignment="Top" RenderTransformOrigin="1.611,0.569" GroupName="SlotRadio" />
         <RadioButton x:Name="Slot3R" Content="Slot 3" HorizontalAlignment="Left" Margin="217,344,0,0" VerticalAlignment="Top" GroupName="SlotRadio"/>
         <Label Content="Slot To Overwrite:" HorizontalAlignment="Left" Margin="10,311,0,0" VerticalAlignment="Top" Width="110"/>
+        <Button Content="Button" HorizontalAlignment="Left" Margin="217,29,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
 
     </Grid>
 </Window>

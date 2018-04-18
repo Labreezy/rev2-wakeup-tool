@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using GGXrdWakeupDPUtil.Library;
 
 namespace GGXrdWakeupDPUtil
 {
@@ -152,7 +153,7 @@ namespace GGXrdWakeupDPUtil
                     }
                     else if (_reversalTool.ReadAnimString(2) == _faceup)
                     {
-                        wakeuptiming = _currentDummy.FaceDownFrames;
+                        wakeuptiming = _currentDummy.FaceUpFrames;
                     }
                     Task framewait = Task.Run(() => WaitFrames(wakeuptiming - wakeupframeidx - 1));
                     framewait.Wait();
@@ -163,6 +164,7 @@ namespace GGXrdWakeupDPUtil
                     }
                     else
                     {
+                        Console.WriteLine("reversal");
                         _scriptInjector.Post("{\"type\": \"playback\"}");
                     }
                 }
@@ -244,10 +246,11 @@ namespace GGXrdWakeupDPUtil
 
         private void WaitFrames(int frames)
         {
+            //frames -= 15;
             int fc = _reversalTool.FrameCount();
             while (_reversalTool.FrameCount() < fc + frames && !waitFrameToken.IsCancellationRequested)
             {
-
+                Thread.Sleep(1);
             }
         }
         private void disableButton_Click(object sender, RoutedEventArgs e)
@@ -258,6 +261,11 @@ namespace GGXrdWakeupDPUtil
             Slot2R.IsEnabled = true;
             Slot3R.IsEnabled = true;
             disableButton.IsEnabled = false;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            _scriptInjector.Post("{\"type\": \"playback\"}");
         }
     }
 }

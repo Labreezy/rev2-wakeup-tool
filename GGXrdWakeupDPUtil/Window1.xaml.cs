@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using GGXrdWakeupDPUtil.Library;
 
 namespace GGXrdWakeupDPUtil
 {
@@ -30,22 +31,16 @@ namespace GGXrdWakeupDPUtil
         private CancellationTokenSource dummyTokenSource = new CancellationTokenSource();
         private CancellationToken dummyToken;
         private NameWakeupData currentDummy;
+        private CancellationTokenSource reversalTokenSource = new CancellationTokenSource();
+        private CancellationToken reversalToken;
 
+        private CancellationTokenSource frameWaitTokenSource = new CancellationTokenSource();
+        private CancellationToken frameWaitToken;
 
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                reversalTool = new ReversalTool2();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Config invalid{Environment.NewLine}{ex.Message}");
-
-                Application.Current.Shutdown();
-                return;
-            }
+            reversalTool = new ReversalTool2(Dispatcher);
 
             try
             {
@@ -65,7 +60,18 @@ namespace GGXrdWakeupDPUtil
             dummyTokenSource?.Cancel();
             reversalTool?.Dispose();
         }
+        private void Slot1Button_Click(object sender, RoutedEventArgs e)
+        {
+            int slotNumber = 0;
+            //ReversalType reversalType = ReversalType.WakeUp;
+            int delay = 0;
+            string input = slot1Input.Text;
 
+            input = "6,2,!3H";
+            var slotInput = reversalTool.SetInputInSlot(slotNumber, input);
+
+            StartReversalLoop(slotInput);
+        }
 
 
 
@@ -92,7 +98,57 @@ namespace GGXrdWakeupDPUtil
             }, dummyToken);
         }
 
+        private void StartReversalLoop(SlotInput slotInput)
+        {
+            reversalToken = reversalTokenSource.Token;
 
+            Task.Run(() =>
+            {
+                while (!reversalToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        int wakeupTiming = reversalTool.GetWakeupTiming(currentDummy);
+
+                        Task framewait = Task.Run(() => WaitFrames(wakeupTiming - slotInput.WakeupFrameIndex - 1), frameWaitToken);
+                        framewait.Wait(frameWaitToken);
+
+                        if (wakeupTiming == 0)
+                        {
+                            continue;
+                        }
+
+                        else
+                        {
+
+                            frameWaitTokenSource = new CancellationTokenSource();
+                            frameWaitToken = frameWaitTokenSource.Token;
+
+
+                            reversalTool.PlayReversal();
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"P2's animation address broke/has changed while enabled.  This program will now shut down.  If this issue persists, contact me.{Environment.NewLine}{ex.Message}");
+                        Application.Current.Shutdown();
+                        //TODO corriger
+                        return;
+                    }
+                }
+
+            }, reversalToken);
+        }
+
+        private void WaitFrames(int frames)
+        {
+            int fc = reversalTool.FrameCount();
+            while (reversalTool.FrameCount() < fc + frames && !frameWaitToken.IsCancellationRequested)
+            {
+
+            }
+        }
 
 
         //TODO Refactor with MVVM
@@ -107,13 +163,6 @@ namespace GGXrdWakeupDPUtil
 
         #endregion
 
-        private void Slot1Button_Click(object sender, RoutedEventArgs e)
-        {
-            int slotNumber = 0;
-            //ReversalType reversalType = ReversalType.WakeUp;
-            int delay = 0;
-            string input = slot1Input.Text;
-            reversalTool.SetInputInSlot(slotNumber, input, delay);
-        }
+       
     }
 }
