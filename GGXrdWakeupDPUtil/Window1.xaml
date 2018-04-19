@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GGXrdWakeupDPUtil"
         mc:Ignorable="d"
-        Title="GGXrd Rev 2 Revesal Tool" Height="417.537" Width="320" Loaded="Window_Loaded" Closed="Window_Closed">
+        Title="GGXrd Rev 2 Reversal Tool" Height="417.537" Width="320" Loaded="Window_Loaded" Closed="Window_Closed">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
