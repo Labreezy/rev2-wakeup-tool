@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Threading;
 using Binarysharp.MemoryManagement;
 using GGXrdWakeupDPUtil.Library.Enums;
 
 namespace GGXrdWakeupDPUtil.Library
 {
-    public class ReversalTool2 : IDisposable
+    public class ReversalTool : IDisposable
     {
         private readonly Dispatcher _dispatcher;
         private readonly string _ggprocname = ConfigurationManager.AppSettings.Get("GGProcessName");
@@ -71,16 +69,16 @@ namespace GGXrdWakeupDPUtil.Library
 
         private MemorySharp _memorySharp;
 
-        private Frida.Script script;
-        private Frida.DeviceManager deviceManager;
-        private Frida.Device device;
-        private Frida.Session session;
+        private Frida.Script _script;
+        private Frida.DeviceManager _deviceManager;
+        private Frida.Device _device;
+        private Frida.Session _session;
 
         private static bool _runReversalThread;
-        private static object _runReversalThreadLock = new object();
+        private static readonly object RunReversalThreadLock = new object();
 
         #region Constructors
-        public ReversalTool2(Dispatcher dispatcher)
+        public ReversalTool(Dispatcher dispatcher)
         {
             _dispatcher = dispatcher;
         }
@@ -100,7 +98,7 @@ namespace GGXrdWakeupDPUtil.Library
             _memorySharp = new MemorySharp(process);
 
 
-            CreateScript(this._dispatcher, _memorySharp.Pid);
+            CreateScript(_dispatcher, _memorySharp.Pid);
         }
 
         public NameWakeupData GetDummy()
@@ -124,50 +122,47 @@ namespace GGXrdWakeupDPUtil.Library
 
             IEnumerable<short> inputShorts = GetInputShorts(inputList);
 
-            OverwriteSlot(slotNumber, inputShorts);
+            var enumerable = inputShorts as short[] ?? inputShorts.ToArray();
+            OverwriteSlot(slotNumber, enumerable);
 
-            return new SlotInput(input, inputShorts, wakeupFrameIndex);
+            return new SlotInput(input, enumerable, wakeupFrameIndex);
         }
 
         
 
         public void PlayReversal()
         {
-            script.Post("{\"type\": \"playback\"}");
+            _script.Post("{\"type\": \"playback\"}");
         }
 
         
 
         public void StartReversalLoop(SlotInput slotInput)
         {
-            lock (_runReversalThreadLock)
+            lock (RunReversalThreadLock)
             {
                 _runReversalThread = true;
             }
 
             Thread reversalThread = new Thread(() =>
             {
-                var currentDummy = this.GetDummy();
+                var currentDummy = GetDummy();
                 bool localRunReversalThread = true;
                 while (localRunReversalThread)
                 {
-
                     int wakeupTiming = GetWakeupTiming(currentDummy);
 
 
                     if (wakeupTiming != 0)
                     {
-
                         Thread waitThread = new Thread(() =>
                         {
                             int fc = FrameCount();
                             var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
                             while (FrameCount() < fc + frames)
                             {
-
                             }
-                        });
-                        waitThread.Name = "waitThread";
+                        }) {Name = "waitThread"};
                         waitThread.Start();
                         waitThread.Join();
 
@@ -176,25 +171,21 @@ namespace GGXrdWakeupDPUtil.Library
                     }
 
 
-
-
-                    lock (_runReversalThreadLock)
+                    lock (RunReversalThreadLock)
                     {
                         localRunReversalThread = _runReversalThread;
                     }
 
                     Thread.Sleep(1);
-
                 }
-            });
+            }) {Name = "reversalThread"};
 
-            reversalThread.Name = "reversalThread";
             reversalThread.Start();
         }
 
         public void StopReversalLoop()
         {
-            lock (_runReversalThreadLock)
+            lock (RunReversalThreadLock)
             {
                 _runReversalThread = false;
             }
@@ -333,19 +324,19 @@ namespace GGXrdWakeupDPUtil.Library
 
         private void CreateScript(Dispatcher dispatcher, int pid)
         {
-            if (script == null)
+            if (_script == null)
             {
-                deviceManager = new Frida.DeviceManager(dispatcher);
-                device = deviceManager.EnumerateDevices().FirstOrDefault(x => x.Type == Frida.DeviceType.Local);
+                _deviceManager = new Frida.DeviceManager(dispatcher);
+                _device = _deviceManager.EnumerateDevices().FirstOrDefault(x => x.Type == Frida.DeviceType.Local);
 
 
 
-                if (device == null)
+                if (_device == null)
                 {
                     throw new Exception("Local device not found.This application will now close.");
                 }
 
-                session = device.Attach((uint)pid);
+                _session = _device.Attach((uint)pid);
 
 
                 var src =
@@ -372,8 +363,8 @@ namespace GGXrdWakeupDPUtil.Library
                         }
                         }, 0);";
 
-                script = session.CreateScript(src);
-                script.Load();
+                _script = _session.CreateScript(src);
+                _script.Load();
 
 
             }
@@ -385,7 +376,7 @@ namespace GGXrdWakeupDPUtil.Library
         }
         private int GetWakeupTiming(NameWakeupData currentDummy)
         {
-            var animationString = this.ReadAnimationString(2);
+            var animationString = ReadAnimationString(2);
 
             if (animationString == FaceDownAnimation)
             {
@@ -409,16 +400,16 @@ namespace GGXrdWakeupDPUtil.Library
             _memorySharp?.Dispose();
 
 
-            script.Post("{\"type\": \"quit\"}");
-            script.Post("{\"type\": \"playback\"}");
-            script.Unload();
-            session.Detach();
+            _script.Post("{\"type\": \"quit\"}");
+            _script.Post("{\"type\": \"playback\"}");
+            _script.Unload();
+            _session.Detach();
 
 
-            script?.Dispose();
-            deviceManager?.Dispose();
-            device?.Dispose();
-            session?.Dispose();
+            _script?.Dispose();
+            _deviceManager?.Dispose();
+            _device?.Dispose();
+            _session?.Dispose();
         }
         #endregion
 

@@ -12,7 +12,7 @@ namespace GGXrdWakeupDPUtil.Test
             InitializeComponent();
         }
 
-        private ReversalTool2 reversalTool;
+        private ReversalTool reversalTool;
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -23,7 +23,7 @@ namespace GGXrdWakeupDPUtil.Test
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            reversalTool = new ReversalTool2(Dispatcher.CurrentDispatcher);
+            reversalTool = new ReversalTool(Dispatcher.CurrentDispatcher);
 
             reversalTool.AttachToProcess();
         }

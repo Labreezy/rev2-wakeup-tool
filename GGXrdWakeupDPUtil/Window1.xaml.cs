@@ -18,14 +18,14 @@ namespace GGXrdWakeupDPUtil
             inputTextBox.TextChanged += inputTextBox_TextChanged;
         }
 
-        private ReversalTool2 _reversalTool;
+        private ReversalTool _reversalTool;
 
         private static bool _runDummyThread;
         private static readonly object RunDummyThreadLock = new object();
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            _reversalTool = new ReversalTool2(Dispatcher);
+            _reversalTool = new ReversalTool(Dispatcher);
 
             try
             {
@@ -129,6 +129,7 @@ namespace GGXrdWakeupDPUtil
             {
                 _runDummyThread = true;
             }
+
             Thread dummyThread = new Thread(() =>
             {
                 NameWakeupData currentDummy = null;
@@ -143,7 +144,6 @@ namespace GGXrdWakeupDPUtil
                         currentDummy = dummy;
 
                         SetDummyName(currentDummy.CharName);
-
                     }
 
 
@@ -154,10 +154,8 @@ namespace GGXrdWakeupDPUtil
 
                     Thread.Sleep(2000);
                 }
+            }) {Name = "dummyThread"};
 
-            });
-
-            dummyThread.Name = "dummyThread";
             dummyThread.Start();
 
         }
