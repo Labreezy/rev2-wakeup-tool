@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -137,13 +138,23 @@ namespace GGXrdWakeupDPUtil
 
                 while (localRunDummyThread)
                 {
-                    var dummy = _reversalTool.GetDummy();
-
-                    if (!Equals(dummy, currentDummy))
+                    try
                     {
-                        currentDummy = dummy;
+                        var dummy = _reversalTool.GetDummy();
 
-                        SetDummyName(currentDummy?.CharName);
+                        if (!Equals(dummy, currentDummy))
+                        {
+                            currentDummy = dummy;
+
+                            SetDummyName(currentDummy?.CharName);
+                        }
+                    }
+                    catch (Win32Exception)
+                    {
+                        StopDummyLoop();
+
+                        Application.Current.Shutdown();
+                        return;
                     }
 
 

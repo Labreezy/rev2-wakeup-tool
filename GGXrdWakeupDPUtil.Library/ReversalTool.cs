@@ -104,18 +104,12 @@ namespace GGXrdWakeupDPUtil.Library
 
         public NameWakeupData GetDummy()
         {
-            try
-            {
-                var index = _memorySharp.Read<byte>(_p2IdOffset);
+            var index = _memorySharp.Read<byte>(_p2IdOffset);
 
-                var result = _nameWakeupDataList[index];
+            var result = _nameWakeupDataList[index];
 
-                return result;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            return result;
+
         }
 
         public SlotInput SetInputInSlot(int slotNumber, string input)
@@ -145,7 +139,7 @@ namespace GGXrdWakeupDPUtil.Library
 
 
 
-        public void StartReversalLoop(SlotInput slotInput,Action errorAction = null)
+        public void StartReversalLoop(SlotInput slotInput, Action errorAction = null)
         {
             lock (RunReversalThreadLock)
             {
@@ -173,7 +167,7 @@ namespace GGXrdWakeupDPUtil.Library
                                     {
                                     }
                                 })
-                                {Name = "waitThread"};
+                            { Name = "waitThread" };
                             waitThread.Start();
                             waitThread.Join();
 
