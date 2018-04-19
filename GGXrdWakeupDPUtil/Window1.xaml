@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:GGXrdWakeupDPUtil"
         mc:Ignorable="d"
         Title="GGXrd Rev 2 Reversal Tool" Height="417.537" Width="320" Loaded="Window_Loaded" Closed="Window_Closed">
     <Grid Margin="10">
