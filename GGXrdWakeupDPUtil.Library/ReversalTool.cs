@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
@@ -144,7 +145,7 @@ namespace GGXrdWakeupDPUtil.Library
 
 
 
-        public void StartReversalLoop(SlotInput slotInput)
+        public void StartReversalLoop(SlotInput slotInput,Action errorAction = null)
         {
             lock (RunReversalThreadLock)
             {
@@ -157,27 +158,33 @@ namespace GGXrdWakeupDPUtil.Library
                 bool localRunReversalThread = true;
                 while (localRunReversalThread)
                 {
-                    int wakeupTiming = GetWakeupTiming(currentDummy);
-
-
-                    if (wakeupTiming != 0)
+                    try
                     {
-                        Thread waitThread = new Thread(() =>
+                        int wakeupTiming = GetWakeupTiming(currentDummy);
+
+
+                        if (wakeupTiming != 0)
                         {
-                            int fc = FrameCount();
-                            var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
-                            while (FrameCount() < fc + frames)
-                            {
-                            }
-                        })
-                        { Name = "waitThread" };
-                        waitThread.Start();
-                        waitThread.Join();
+                            Thread waitThread = new Thread(() =>
+                                {
+                                    int fc = FrameCount();
+                                    var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
+                                    while (FrameCount() < fc + frames)
+                                    {
+                                    }
+                                })
+                                {Name = "waitThread"};
+                            waitThread.Start();
+                            waitThread.Join();
 
 
-                        PlayReversal();
+                            PlayReversal();
+                        }
                     }
-
+                    catch (Win32Exception)
+                    {
+                        errorAction?.Invoke();
+                    }
 
                     lock (RunReversalThreadLock)
                     {
@@ -304,6 +311,23 @@ namespace GGXrdWakeupDPUtil.Library
 
         private void OverwriteSlot(int slotNumber, IEnumerable<short> inputs)
         {
+            //TODO Store resources
+            var ptr = _memorySharp[(IntPtr)0x0A24744].Read<IntPtr>();
+
+
+            var slotAddr = (ptr + 0x6C) + RecordingSlotSize * (slotNumber - 1);
+
+
+            var inputList2 = inputs as short[] ?? inputs.ToArray();
+            var header2 = new List<short> { 0, 0, (short)inputList2.Length, 0 };
+
+            _memorySharp.Write((IntPtr)slotAddr, header2.Concat(inputList2).ToArray(), false);
+
+            return;
+
+
+
+
             var addr = _recordingSlotOffset + RecordingSlotSize * (slotNumber - 1);
             var inputList = inputs as short[] ?? inputs.ToArray();
             var header = new List<short> { 0, 0, (short)inputList.Length, 0 };
@@ -409,10 +433,10 @@ namespace GGXrdWakeupDPUtil.Library
             _memorySharp?.Dispose();
 
 
-            _script.Post("{\"type\": \"quit\"}");
-            _script.Post("{\"type\": \"playback\"}");
-            _script.Unload();
-            _session.Detach();
+            _script?.Post("{\"type\": \"quit\"}");
+            _script?.Post("{\"type\": \"playback\"}");
+            _script?.Unload();
+            _session?.Detach();
 
 
             _script?.Dispose();

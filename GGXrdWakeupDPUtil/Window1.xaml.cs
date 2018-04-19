@@ -68,7 +68,12 @@ namespace GGXrdWakeupDPUtil
 
             var slotInput = _reversalTool.SetInputInSlot(slotNumber, inputTextBox.Text);
 
-            _reversalTool.StartReversalLoop(slotInput);
+            Action action = () =>
+            {
+                Dispatcher.Invoke(StopReversal);
+            };
+
+            _reversalTool.StartReversalLoop(slotInput, action);
 
             enableButton.IsEnabled = false;
             disableButton.IsEnabled = true;
@@ -81,15 +86,10 @@ namespace GGXrdWakeupDPUtil
 
         private void disableButton_Click(object sender, RoutedEventArgs e)
         {
-            enableButton.IsEnabled = true;
-            disableButton.IsEnabled = false;
-            inputTextBox.IsEnabled = true;
-
-            Slot1R.IsEnabled = true;
-            Slot2R.IsEnabled = true;
-            Slot3R.IsEnabled = true;
-            _reversalTool.StopReversalLoop();
+            StopReversal();
         }
+
+
 
         private void inputTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -154,7 +154,8 @@ namespace GGXrdWakeupDPUtil
 
                     Thread.Sleep(2000);
                 }
-            }) {Name = "dummyThread"};
+            })
+            { Name = "dummyThread" };
 
             dummyThread.Start();
 
@@ -170,11 +171,31 @@ namespace GGXrdWakeupDPUtil
 
         private void SetDummyName(string dummyName)
         {
-            Dispatcher.Invoke(() =>
+            lock (RunDummyThreadLock)
             {
-                dummyTextBlock.Text = $"Current Dummy: {dummyName}";
-            });
-            
+                if (_runDummyThread)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        dummyTextBlock.Text = $"Current Dummy: {dummyName}";
+                    });
+                }
+
+
+            }
+
+        }
+
+        private void StopReversal()
+        {
+            enableButton.IsEnabled = true;
+            disableButton.IsEnabled = false;
+            inputTextBox.IsEnabled = true;
+
+            Slot1R.IsEnabled = true;
+            Slot2R.IsEnabled = true;
+            Slot3R.IsEnabled = true;
+            _reversalTool.StopReversalLoop();
         }
     }
 }
