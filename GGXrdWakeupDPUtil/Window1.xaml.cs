@@ -143,7 +143,7 @@ namespace GGXrdWakeupDPUtil
                     {
                         currentDummy = dummy;
 
-                        SetDummyName(currentDummy.CharName);
+                        SetDummyName(currentDummy?.CharName);
                     }
 
 

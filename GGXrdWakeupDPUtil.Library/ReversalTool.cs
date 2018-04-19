@@ -103,11 +103,18 @@ namespace GGXrdWakeupDPUtil.Library
 
         public NameWakeupData GetDummy()
         {
-            var index = _memorySharp.Read<byte>(_p2IdOffset);
+            try
+            {
+                var index = _memorySharp.Read<byte>(_p2IdOffset);
 
-            var result = _nameWakeupDataList[index];
+                var result = _nameWakeupDataList[index];
 
-            return result;
+                return result;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public SlotInput SetInputInSlot(int slotNumber, string input)
@@ -128,14 +135,14 @@ namespace GGXrdWakeupDPUtil.Library
             return new SlotInput(input, enumerable, wakeupFrameIndex);
         }
 
-        
+
 
         public void PlayReversal()
         {
             _script.Post("{\"type\": \"playback\"}");
         }
 
-        
+
 
         public void StartReversalLoop(SlotInput slotInput)
         {
@@ -162,7 +169,8 @@ namespace GGXrdWakeupDPUtil.Library
                             while (FrameCount() < fc + frames)
                             {
                             }
-                        }) {Name = "waitThread"};
+                        })
+                        { Name = "waitThread" };
                         waitThread.Start();
                         waitThread.Join();
 
@@ -178,7 +186,8 @@ namespace GGXrdWakeupDPUtil.Library
 
                     Thread.Sleep(1);
                 }
-            }) {Name = "reversalThread"};
+            })
+            { Name = "reversalThread" };
 
             reversalThread.Start();
         }
