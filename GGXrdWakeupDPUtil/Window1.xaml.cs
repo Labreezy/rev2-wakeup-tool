@@ -58,11 +58,11 @@ namespace GGXrdWakeupDPUtil
             {
                 slotNumber = 1;
             }
-            else if (Slot1R.IsChecked != null && Slot1R.IsChecked.Value)
+            else if (Slot2R.IsChecked != null && Slot2R.IsChecked.Value)
             {
                 slotNumber = 2;
             }
-            else if (Slot1R.IsChecked != null && Slot1R.IsChecked.Value)
+            else if (Slot3R.IsChecked != null && Slot3R.IsChecked.Value)
             {
                 slotNumber = 3;
             }
@@ -156,7 +156,13 @@ namespace GGXrdWakeupDPUtil
                         Application.Current.Shutdown();
                         return;
                     }
-
+                    catch (Exception)
+                    {
+                        StopDummyLoop();
+                        MessageBox.Show("Can't read Dummy!");
+                        Application.Current.Shutdown();
+                        return;
+                    }
 
                     lock (RunDummyThreadLock)
                     {

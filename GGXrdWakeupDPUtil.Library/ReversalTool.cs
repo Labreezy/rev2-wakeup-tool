@@ -53,7 +53,7 @@ namespace GGXrdWakeupDPUtil.Library
 
         #region Offsets
         private readonly IntPtr _p2IdOffset = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2IdOffset"), 16));
-        private readonly int _recordingSlotOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("RecordingSlotOffset"), 16);
+        private readonly IntPtr _recordingSlotPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("RecordingSlotPtr"), 16));
         private readonly IntPtr _p1AnimStringPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1AnimStringPtr"), 16));
         private readonly int _p1AnimStringPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1AnimStringPtrOffset"), 16);
         private readonly IntPtr _p2AnimStringPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2AnimStringPtr"), 16));
@@ -305,28 +305,16 @@ namespace GGXrdWakeupDPUtil.Library
 
         private void OverwriteSlot(int slotNumber, IEnumerable<short> inputs)
         {
-            //TODO Store resources
-            var ptr = _memorySharp[(IntPtr)0x0A24744].Read<IntPtr>();
+            var ptr = _memorySharp[_recordingSlotPtr].Read<IntPtr>();
 
 
-            var slotAddr = (ptr + 0x6C) + RecordingSlotSize * (slotNumber - 1);
+            var slotAddr = ptr + RecordingSlotSize * (slotNumber - 1);
 
 
             var inputList2 = inputs as short[] ?? inputs.ToArray();
             var header2 = new List<short> { 0, 0, (short)inputList2.Length, 0 };
 
-            _memorySharp.Write((IntPtr)slotAddr, header2.Concat(inputList2).ToArray(), false);
-
-            return;
-
-
-
-
-            var addr = _recordingSlotOffset + RecordingSlotSize * (slotNumber - 1);
-            var inputList = inputs as short[] ?? inputs.ToArray();
-            var header = new List<short> { 0, 0, (short)inputList.Length, 0 };
-
-            _memorySharp.Write((IntPtr)addr, header.Concat(inputList).ToArray(), false);
+            _memorySharp.Write(slotAddr, header2.Concat(inputList2).ToArray(), false);
 
         }
 
