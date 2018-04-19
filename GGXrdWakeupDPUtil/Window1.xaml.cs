@@ -1,17 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using GGXrdWakeupDPUtil.Library;
 
 namespace GGXrdWakeupDPUtil
@@ -19,7 +9,7 @@ namespace GGXrdWakeupDPUtil
     /// <summary>
     /// Logique d'interaction pour Window1.xaml
     /// </summary>
-    public partial class Window1 : Window
+    public partial class Window1
     {
         public Window1()
         {
@@ -28,18 +18,18 @@ namespace GGXrdWakeupDPUtil
             inputTextBox.TextChanged += inputTextBox_TextChanged;
         }
 
-        private ReversalTool2 reversalTool;
+        private ReversalTool2 _reversalTool;
 
         private static bool _runDummyThread;
-        private static object _runDummyThreadLock = new object();
+        private static readonly object RunDummyThreadLock = new object();
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            reversalTool = new ReversalTool2(Dispatcher);
+            _reversalTool = new ReversalTool2(Dispatcher);
 
             try
             {
-                reversalTool.AttachToProcess();
+                _reversalTool.AttachToProcess();
             }
             catch (Exception exception)
             {
@@ -56,7 +46,7 @@ namespace GGXrdWakeupDPUtil
         private void Window_Closed(object sender, EventArgs e)
         {
             StopDummyLoop();
-            reversalTool?.Dispose();
+            _reversalTool?.Dispose();
         }
 
         private void enableButton_Click(object sender, RoutedEventArgs e)
@@ -76,13 +66,17 @@ namespace GGXrdWakeupDPUtil
                 slotNumber = 3;
             }
 
-            var slotInput = reversalTool.SetInputInSlot(slotNumber, inputTextBox.Text);
+            var slotInput = _reversalTool.SetInputInSlot(slotNumber, inputTextBox.Text);
 
-            reversalTool.StartReversalLoop(slotInput);
+            _reversalTool.StartReversalLoop(slotInput);
 
             enableButton.IsEnabled = false;
             disableButton.IsEnabled = true;
             inputTextBox.IsEnabled = false;
+
+            Slot1R.IsEnabled = false;
+            Slot2R.IsEnabled = false;
+            Slot3R.IsEnabled = false;
         }
 
         private void disableButton_Click(object sender, RoutedEventArgs e)
@@ -90,7 +84,11 @@ namespace GGXrdWakeupDPUtil
             enableButton.IsEnabled = true;
             disableButton.IsEnabled = false;
             inputTextBox.IsEnabled = true;
-            reversalTool.StopReversalLoop();
+
+            Slot1R.IsEnabled = true;
+            Slot2R.IsEnabled = true;
+            Slot3R.IsEnabled = true;
+            _reversalTool.StopReversalLoop();
         }
 
         private void inputTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -110,7 +108,7 @@ namespace GGXrdWakeupDPUtil
 
 
 
-            bool validInput = reversalTool != null && reversalTool.CheckValidInput(text);
+            bool validInput = _reversalTool != null && _reversalTool.CheckValidInput(text);
 
             if (validInput)
             {
@@ -127,7 +125,7 @@ namespace GGXrdWakeupDPUtil
 
         private void StartDummyLoop()
         {
-            lock (_runDummyThreadLock)
+            lock (RunDummyThreadLock)
             {
                 _runDummyThread = true;
             }
@@ -138,7 +136,7 @@ namespace GGXrdWakeupDPUtil
 
                 while (localRunDummyThread)
                 {
-                    var dummy = reversalTool.GetDummy();
+                    var dummy = _reversalTool.GetDummy();
 
                     if (!Equals(dummy, currentDummy))
                     {
@@ -146,6 +144,12 @@ namespace GGXrdWakeupDPUtil
 
                         SetDummyName(currentDummy.CharName);
 
+                    }
+
+
+                    lock (RunDummyThreadLock)
+                    {
+                        localRunDummyThread = _runDummyThread;
                     }
 
                     Thread.Sleep(2000);
@@ -160,7 +164,7 @@ namespace GGXrdWakeupDPUtil
 
         private void StopDummyLoop()
         {
-            lock (_runDummyThreadLock)
+            lock (RunDummyThreadLock)
             {
                 _runDummyThread = false;
             }
