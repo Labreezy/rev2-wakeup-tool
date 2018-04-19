@@ -16,7 +16,7 @@ namespace GGXrdWakeupDPUtil
         {
             InitializeComponent();
 
-            inputTextBox.TextChanged += inputTextBox_TextChanged;
+            InputTextBox.TextChanged += inputTextBox_TextChanged;
         }
 
         private ReversalTool _reversalTool;
@@ -67,7 +67,7 @@ namespace GGXrdWakeupDPUtil
                 slotNumber = 3;
             }
 
-            var slotInput = _reversalTool.SetInputInSlot(slotNumber, inputTextBox.Text);
+            var slotInput = _reversalTool.SetInputInSlot(slotNumber, InputTextBox.Text);
 
             Action action = () =>
             {
@@ -76,9 +76,9 @@ namespace GGXrdWakeupDPUtil
 
             _reversalTool.StartReversalLoop(slotInput, action);
 
-            enableButton.IsEnabled = false;
-            disableButton.IsEnabled = true;
-            inputTextBox.IsEnabled = false;
+            EnableButton.IsEnabled = false;
+            DisableButton.IsEnabled = true;
+            InputTextBox.IsEnabled = false;
 
             Slot1R.IsEnabled = false;
             Slot2R.IsEnabled = false;
@@ -99,12 +99,12 @@ namespace GGXrdWakeupDPUtil
 
         private void CheckValidInput()
         {
-            var text = inputTextBox.Text;
+            var text = InputTextBox.Text;
 
             if (string.IsNullOrEmpty(text))
             {
-                errorTextBlock.Visibility = Visibility.Hidden;
-                enableButton.IsEnabled = false;
+                ErrorTextBlock.Visibility = Visibility.Hidden;
+                EnableButton.IsEnabled = false;
             }
 
 
@@ -113,14 +113,14 @@ namespace GGXrdWakeupDPUtil
 
             if (validInput)
             {
-                errorTextBlock.Visibility = Visibility.Hidden;
-                enableButton.IsEnabled = true;
+                ErrorTextBlock.Visibility = Visibility.Hidden;
+                EnableButton.IsEnabled = true;
             }
             else
             {
-                errorTextBlock.Visibility = Visibility.Visible;
-                errorTextBlock.Text = "Invalid Input";
-                enableButton.IsEnabled = false;
+                ErrorTextBlock.Visibility = Visibility.Visible;
+                ErrorTextBlock.Text = "Invalid Input";
+                EnableButton.IsEnabled = false;
             }
         }
 
@@ -188,7 +188,7 @@ namespace GGXrdWakeupDPUtil
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        dummyTextBlock.Text = $"Current Dummy: {dummyName}";
+                        DummyTextBlock.Text = $"Current Dummy: {dummyName}";
                     });
                 }
 
@@ -199,9 +199,9 @@ namespace GGXrdWakeupDPUtil
 
         private void StopReversal()
         {
-            enableButton.IsEnabled = true;
-            disableButton.IsEnabled = false;
-            inputTextBox.IsEnabled = true;
+            EnableButton.IsEnabled = true;
+            DisableButton.IsEnabled = false;
+            InputTextBox.IsEnabled = true;
 
             Slot1R.IsEnabled = true;
             Slot2R.IsEnabled = true;
