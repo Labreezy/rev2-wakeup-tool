@@ -214,7 +214,7 @@ namespace GGXrdWakeupDPUtil.Library
 
             return inputList.All(x =>
             {
-                Regex regex = new Regex(@"!{0,1}[1-9][PKSHD]*(?:,|$)");
+                Regex regex = new Regex(@"^!{0,1}[1-9][PKSHDpksdh]*(?:,|$)");
 
                 return regex.IsMatch(x);
             });
