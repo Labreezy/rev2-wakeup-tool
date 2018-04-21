@@ -214,7 +214,7 @@ namespace GGXrdWakeupDPUtil.Library
 
             return inputList.All(x =>
             {
-                Regex regex = new Regex(@"!{0,1}[1-9][PKSHD]*(?:,|$)");
+                Regex regex = new Regex(@"^!{0,1}[1-9][PKSHDpksdh]*(?:,|$)");
 
                 return regex.IsMatch(x);
             });
@@ -279,18 +279,23 @@ namespace GGXrdWakeupDPUtil.Library
                     switch (button)
                     {
                         case 'P':
+                        case 'p':
                             result |= (int)Buttons.P;
                             break;
                         case 'K':
+                        case 'k':
                             result |= (int)Buttons.K;
                             break;
                         case 'S':
+                        case 's':
                             result |= (int)Buttons.S;
                             break;
                         case 'H':
+                        case 'h':
                             result |= (int)Buttons.H;
                             break;
                         case 'D':
+                        case 'd':
                             result |= (int)Buttons.D;
                             break;
                     }
