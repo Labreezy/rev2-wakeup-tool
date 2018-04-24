@@ -171,6 +171,9 @@ namespace GGXrdWakeupDPUtil
 
                     Thread.Sleep(2000);
                 }
+#if DEBUG
+                Console.WriteLine(@"dummyThread ended");
+#endif
             })
             { Name = "dummyThread" };
 
