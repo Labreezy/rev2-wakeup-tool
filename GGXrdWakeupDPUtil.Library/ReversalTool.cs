@@ -134,6 +134,9 @@ namespace GGXrdWakeupDPUtil.Library
 
         public void PlayReversal()
         {
+#if DEBUG
+            Console.WriteLine("Play Reversal"); 
+#endif
             _script.Post("{\"type\": \"playback\"}");
         }
 
@@ -187,6 +190,10 @@ namespace GGXrdWakeupDPUtil.Library
 
                     Thread.Sleep(1);
                 }
+
+#if DEBUG
+                Console.WriteLine("reversalThread ended");
+#endif
             })
             { Name = "reversalThread" };
 
