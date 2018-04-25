@@ -198,6 +198,8 @@ namespace GGXrdWakeupDPUtil.Library
             { Name = "reversalThread" };
 
             reversalThread.Start();
+
+            this._memorySharp.Windows.MainWindow.Activate();
         }
 
         public void StopReversalLoop()
