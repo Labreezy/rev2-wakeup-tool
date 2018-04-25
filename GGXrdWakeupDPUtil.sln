@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GGXrdWakeupDPUtil.Library",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GGXrdWakeupDPUtil.Test", "GGXrdWakeupDPUtil.Test\GGXrdWakeupDPUtil.Test.csproj", "{E0E43215-1358-4E08-861F-6E70197A6EE2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GGXrdWakeupDPUtil.UnitTests", "GGXrdWakeupDPUtil.UnitTests\GGXrdWakeupDPUtil.UnitTests.csproj", "{C82809DD-084B-4C73-80F4-F3A87EA37382}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{E0E43215-1358-4E08-861F-6E70197A6EE2}.Release|x64.Build.0 = Release|Any CPU
 		{E0E43215-1358-4E08-861F-6E70197A6EE2}.Release|x86.ActiveCfg = Release|Any CPU
 		{E0E43215-1358-4E08-861F-6E70197A6EE2}.Release|x86.Build.0 = Release|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Debug|x64.Build.0 = Debug|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Debug|x86.Build.0 = Debug|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Release|x64.ActiveCfg = Release|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Release|x64.Build.0 = Release|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Release|x86.ActiveCfg = Release|Any CPU
+		{C82809DD-084B-4C73-80F4-F3A87EA37382}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

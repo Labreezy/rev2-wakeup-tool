@@ -135,7 +135,7 @@ namespace GGXrdWakeupDPUtil.Library
         public void PlayReversal()
         {
 #if DEBUG
-            Console.WriteLine("Play Reversal"); 
+            Console.WriteLine("Play Reversal");
 #endif
             _script.Post("{\"type\": \"playback\"}");
         }
@@ -199,7 +199,7 @@ namespace GGXrdWakeupDPUtil.Library
 
             reversalThread.Start();
 
-            this._memorySharp.Windows.MainWindow.Activate();
+            _memorySharp.Windows.MainWindow.Activate();
         }
 
         public void StopReversalLoop()
@@ -226,7 +226,13 @@ namespace GGXrdWakeupDPUtil.Library
                 Regex regex = new Regex(@"^!{0,1}[1-9][PKSHDpksdh]*(?:,|$)");
 
                 return regex.IsMatch(x);
-            });
+            })
+            && inputList.Where(x =>
+            {
+                Regex regex = new Regex(@"^!{1}[1-9][PKSHDpksdh]*(?:,|$)");
+                return regex.IsMatch(x);
+            }).Count() == 1
+            ;
         }
 
         #region Private
