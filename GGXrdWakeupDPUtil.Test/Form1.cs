@@ -35,7 +35,6 @@ namespace GGXrdWakeupDPUtil.Test
 
         private void button3_Click(object sender, EventArgs e)
         {
-            _reversalTool.PlayReversal();
         }
 
         
