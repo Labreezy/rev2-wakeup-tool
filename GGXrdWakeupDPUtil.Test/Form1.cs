@@ -23,7 +23,7 @@ namespace GGXrdWakeupDPUtil.Test
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            _reversalTool = new ReversalTool(Dispatcher.CurrentDispatcher);
+            _reversalTool = new ReversalTool();
 
             _reversalTool.AttachToProcess();
         }

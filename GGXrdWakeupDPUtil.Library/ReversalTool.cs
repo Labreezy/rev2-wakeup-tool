@@ -14,7 +14,6 @@ namespace GGXrdWakeupDPUtil.Library
 {
     public class ReversalTool : IDisposable
     {
-        private readonly Dispatcher _dispatcher;
         private readonly string _ggprocname = ConfigurationManager.AppSettings.Get("GGProcessName");
 
 
@@ -66,23 +65,15 @@ namespace GGXrdWakeupDPUtil.Library
         private readonly string FaceUpAnimation = "CmnActBDown2Stand";
 
         private const int RecordingSlotSize = 4808;
-
-
+        private byte[] _originalCodeAOB;
+        private byte[] _remoteCodeAOB;
         private MemorySharp _memorySharp;
-
-        private Frida.Script _script;
-        private Frida.DeviceManager _deviceManager;
-        private Frida.Device _device;
-        private Frida.Session _session;
-
+        private Binarysharp.MemoryManagement.Memory.RemoteAllocation _newmem;
+        private IntPtr _newmembase;
         private static bool _runReversalThread;
         private static readonly object RunReversalThreadLock = new object();
-
+        private IntPtr _nonRelativeScriptOffset;
         #region Constructors
-        public ReversalTool(Dispatcher dispatcher)
-        {
-            _dispatcher = dispatcher;
-        }
         #endregion
 
 
@@ -97,9 +88,14 @@ namespace GGXrdWakeupDPUtil.Library
             }
 
             _memorySharp = new MemorySharp(process);
-
-
-            CreateScript(_dispatcher, _memorySharp.Pid);
+            _nonRelativeScriptOffset = IntPtr.Add(_memorySharp.Modules.MainModule.BaseAddress, (int)_scriptOffset);
+            _newmem = _memorySharp.Memory.Allocate(128);
+            _newmembase = _newmem.Information.AllocationBase;
+            var originalCodeAOB = _memorySharp.Assembly.Assembler.Assemble("mov ebp,[ebp+0x0C]\n" + "test [edx],ebp\n" + String.Format("jmp 0x{0}", (_nonRelativeScriptOffset + 5).ToString("X8")), _newmembase);
+            _originalCodeAOB = new byte[originalCodeAOB.Length + 20];
+            originalCodeAOB.CopyTo(_originalCodeAOB, 0);
+            _remoteCodeAOB = _memorySharp.Assembly.Assembler.Assemble(String.Format("mov ebp,[ebp+0x0C]\n" +"cmp edi,3\n" + "jne 0x{0}\n" + "mov ebp,[edx]\n" + "test [edx],ebp\n" + "jmp 0x{1}", IntPtr.Add(_newmembase, 0xA).ToString("X8"), ( _nonRelativeScriptOffset.ToInt32() + 5).ToString("X8")), _newmembase);
+            _memorySharp.Write<byte>(_newmembase, _originalCodeAOB, false);
         }
 
         public NameWakeupData GetDummy()
@@ -137,7 +133,13 @@ namespace GGXrdWakeupDPUtil.Library
 #if DEBUG
             Console.WriteLine("Play Reversal");
 #endif
-            _script.Post("{\"type\": \"playback\"}");
+            var fc = FrameCount();
+            _memorySharp.Write<byte>(_newmembase, _remoteCodeAOB, false);
+            while(FrameCount() < fc + 1)
+            {
+
+            }
+            _memorySharp.Write<byte>(_newmembase, _originalCodeAOB, false);
         }
 
 
@@ -153,6 +155,7 @@ namespace GGXrdWakeupDPUtil.Library
             {
                 var currentDummy = GetDummy();
                 bool localRunReversalThread = true;
+                _memorySharp.Assembly.Inject(String.Format("jmp 0x{0}", _newmembase.ToString("X8")), _nonRelativeScriptOffset);
                 while (localRunReversalThread)
                 {
                     try
@@ -207,6 +210,7 @@ namespace GGXrdWakeupDPUtil.Library
             lock (RunReversalThreadLock)
             {
                 _runReversalThread = false;
+                _memorySharp.Assembly.Inject(new string[] { "mov ebp, [ebp+0x0C]", "test [edx],ebp" }, _nonRelativeScriptOffset);
             }
         }
 
@@ -357,54 +361,6 @@ namespace GGXrdWakeupDPUtil.Library
             return string.Empty;
         }
 
-        private void CreateScript(Dispatcher dispatcher, int pid)
-        {
-            if (_script == null)
-            {
-                _deviceManager = new Frida.DeviceManager(dispatcher);
-                _device = _deviceManager.EnumerateDevices().FirstOrDefault(x => x.Type == Frida.DeviceType.Local);
-
-
-
-                if (_device == null)
-                {
-                    throw new Exception("Local device not found.This application will now close.");
-                }
-
-                _session = _device.Attach((uint)pid);
-
-
-                var src =
-                    @"var xrdbase = Module.findBaseAddress('GuiltyGearXrd.exe');
-                    var hookaddr = xrdbase.add(" + "0x" + _scriptOffset.ToString("x") + @");
-                    var playingback = false;
-                    var running = true;
-                    Interceptor.attach(hookaddr, function(args){
-            	        if(playingback && this.context.edi.equals(ptr('3'))){
-                	        playingback = false;
-                	        this.context.ebp = ptr(Memory.readU32(this.context.edx).toString());
-                          }
-                        });
-                    var quit = recv('quit', function (value) {
-                       Interceptor.detachAll();
-                       running = false;
-                    });
-                    setTimeout( function () {
-                        while (running){        
-                            var op = recv('playback', function (value) {
-                            playingback=true;
-                                });
-                            op.wait();
-                        }
-                        }, 0);";
-
-                _script = _session.CreateScript(src);
-                _script.Load();
-
-
-            }
-        }
-
         private int FrameCount()
         {
             return _memorySharp.Read<int>(_frameCountOffset);
@@ -431,20 +387,7 @@ namespace GGXrdWakeupDPUtil.Library
         public void Dispose()
         {
             StopReversalLoop();
-
             _memorySharp?.Dispose();
-
-
-            _script?.Post("{\"type\": \"quit\"}");
-            _script?.Post("{\"type\": \"playback\"}");
-            _script?.Unload();
-            _session?.Detach();
-
-
-            _script?.Dispose();
-            _deviceManager?.Dispose();
-            _device?.Dispose();
-            _session?.Dispose();
         }
         #endregion
 
