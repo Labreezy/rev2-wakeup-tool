@@ -21,15 +21,12 @@ No + signs.  Heavy slash is abbreviated "H".
 
 4. Check the slot you want to overwrite is the one currently selected in the program and in-game.
 
-5. Hit "Enable" and you should be in buisness.  
+5. Hit "Enable" and you should be in buisness.  Hit disable to make it stop/change wakeup inputs.
 
 # Known Issues (IMPORTANT, MUST READ)
 
 1. If you are switching characters through the menu/causing training mode to reload for any reason, close the program and wait for it to close before doing so.  Otherwise, the program will be in a state where you have to close and restart gg and the tool from step 1.
 
-2. If it's taking too long to disable, try knocking the opponent down and see if that fixes the problem.  This issue has been fixed since version 0.1.1.  
-
-3. If for some reason you have to ctrl+alt+delete and kill the tool, don't just kill the main process, there's also another helper process called frida-winjector-32 that one of the dlls spawn that helps with the magic.  Kill that too before restarting.
 
 
 
