@@ -65,14 +65,16 @@ namespace GGXrdWakeupDPUtil.Library
         private readonly string FaceUpAnimation = "CmnActBDown2Stand";
 
         private const int RecordingSlotSize = 4808;
-        private byte[] _originalCodeAOB;
         private byte[] _remoteCodeAOB;
         private MemorySharp _memorySharp;
         private Binarysharp.MemoryManagement.Memory.RemoteAllocation _newmem;
+        private Binarysharp.MemoryManagement.Memory.RemoteAllocation _flagmem;
         private IntPtr _newmembase;
+        private IntPtr _flagmembase;
         private static bool _runReversalThread;
         private static readonly object RunReversalThreadLock = new object();
         private IntPtr _nonRelativeScriptOffset;
+        private static bool _written = false;
         #region Constructors
         #endregion
 
@@ -91,12 +93,14 @@ namespace GGXrdWakeupDPUtil.Library
             _nonRelativeScriptOffset = IntPtr.Add(_memorySharp.Modules.MainModule.BaseAddress, (int)_scriptOffset);
             _newmem = _memorySharp.Memory.Allocate(128);
             _newmembase = _newmem.Information.AllocationBase;
-            var originalCodeAOB = _memorySharp.Assembly.Assembler.Assemble("mov ebp,[ebp+0x0C]\n" + "test [edx],ebp\n" + String.Format("jmp 0x{0}", (_nonRelativeScriptOffset + 5).ToString("X8")), _newmembase);
-            _originalCodeAOB = new byte[originalCodeAOB.Length + 30];
-            originalCodeAOB.CopyTo(_originalCodeAOB, 0);
-            var remoteASMstring = String.Format("mov ebp,[ebp+0x0C]\n" + "cmp edi,3\n" + "jne 0x{0}\n" + "cmp DWORD [0x{2}],0\n" + "jne 0x{1}\n" + "mov ebp,[edx]\n" + "add DWORD [0x{2}], 1\n" + "test [edx],ebp\n" + "jmp 0x{1}", IntPtr.Add(_newmembase, 0x1E).ToString("X8"), (_nonRelativeScriptOffset.ToInt32() + 5).ToString("X8"), IntPtr.Add(_newmembase, 0x80).ToString("X8"));
+            _flagmem = _memorySharp.Memory.Allocate(128);
+            _flagmembase = _flagmem.Information.AllocationBase;
+            var remoteASMstring = String.Format("mov ebp,[eax+0x40]\n" + "mov ebp,[ebp+0x0C]\n" + "cmp edi,3\n" + "jne 0x{0}\n" + "cmp BYTE [0x{2}], 1\n" + "je 0x{3}\n" +
+                "mov DWORD [0x{4}], 0x200\n" + "and DWORD [0x{4}], eax\n" + "cmp DWORD [0x{4}], 0x200\n" + "jne 0x{0}\n" + "mov DWORD [0x{4}], eax\n" + "mov BYTE [0x{2}], 1\n" + "jmp 0x{0}\n" +
+                "cmp DWORD [0x{4}], eax\n" + "jne 0x{0}\n" + "cmp BYTE [0x{1}],0\n" + "jne 0x{0}\n"  + "mov ebp,[edx]\n" + "mov BYTE [0x{1}], 1\n" + "jmp 0x{0}", 
+                (_nonRelativeScriptOffset.ToInt32() + 6).ToString("X8"), _flagmembase.ToString("X8"), IntPtr.Add(_flagmembase,1).ToString("X8"), IntPtr.Add(_newmembase, 0x49).ToString("X8"), IntPtr.Add(_flagmembase,4).ToString("X8"));
             _remoteCodeAOB = _memorySharp.Assembly.Assembler.Assemble(remoteASMstring, _newmembase);
-            _memorySharp.Write<byte>(_newmembase, _originalCodeAOB, false);
+            _memorySharp.Write<byte>(_newmembase, _remoteCodeAOB, false);
         }
 
         public NameWakeupData GetDummy()
@@ -126,12 +130,25 @@ namespace GGXrdWakeupDPUtil.Library
 
             return new SlotInput(input, enumerable, wakeupFrameIndex);
         }
-
-
-
-
-
-
+        public void waitAndReversal(SlotInput slotInput, int wakeupTiming)
+        {
+            int fc = FrameCount();
+            var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
+            while (FrameCount() < fc + frames)
+            {
+            }
+            lock (_memorySharp)
+            {
+#if DEBUG
+                Console.WriteLine("Reversal!");
+#endif
+                _memorySharp.Write<byte>(_flagmembase, 0, false);
+                Thread.Sleep(320); //20 frames, approximately, it's actually 333.333333333 ms.  Nobody should be able to be knocked down and get up in this time, causing the code to execute again.
+#if DEBUG
+                Console.WriteLine("Reversal Wait Finished!");
+#endif
+            }
+        }
         public void StartReversalLoop(SlotInput slotInput, Action errorAction = null)
         {
             lock (RunReversalThreadLock)
@@ -143,8 +160,9 @@ namespace GGXrdWakeupDPUtil.Library
             {
                 var currentDummy = GetDummy();
                 bool localRunReversalThread = true;
-                _memorySharp.Assembly.Inject(String.Format("jmp 0x{0}", _newmembase.ToString("X8")), _nonRelativeScriptOffset);
-                _memorySharp.Write<byte>(_newmembase, _originalCodeAOB, false);
+                _memorySharp.Write<byte>(_flagmembase, 1, false);
+                _written = false;
+                _memorySharp.Assembly.Inject(String.Format("jmp 0x{0}\nnop", _newmembase.ToString("X8")), _nonRelativeScriptOffset);
                 while (localRunReversalThread)
                 {
                     try
@@ -152,27 +170,9 @@ namespace GGXrdWakeupDPUtil.Library
                         int wakeupTiming = GetWakeupTiming(currentDummy);
 
 
-                        if (wakeupTiming != 0)
+                        if (wakeupTiming != 0 && !_written)
                         {
-                            Thread waitThread = new Thread(() =>
-                                {
-                                    int fc = FrameCount();
-                                    var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
-                                    while (FrameCount() < fc + frames)
-                                    {
-                                    }
-                                })
-                            { Name = "waitThread" };
-                            waitThread.Start();
-                            waitThread.Join();
-                            _memorySharp.Write<byte>(_newmembase, _remoteCodeAOB, false);
-                            var currfc = FrameCount();
-                            while(currfc + 2 != FrameCount())
-                            {
-
-                            }
-                            _memorySharp.Write<byte>(_newmembase, _originalCodeAOB, false);
-                            _memorySharp.Write<int>(IntPtr.Add(_newmembase, 0x80), 0, false);
+                            waitAndReversal(slotInput, wakeupTiming);
                         }
                     }
                     catch (Win32Exception)
@@ -204,8 +204,7 @@ namespace GGXrdWakeupDPUtil.Library
             lock (RunReversalThreadLock)
             {
                 _runReversalThread = false;
-                _memorySharp.Write<byte>(_newmembase, _originalCodeAOB, false);
-                _memorySharp.Assembly.Inject(new string[] { "mov ebp, [ebp+0x0C]", "test [edx],ebp" }, _nonRelativeScriptOffset);
+                _memorySharp.Assembly.Inject(new string[] { "mov ebp,[eax+0x40]" , "mov ebp,[ebp+0x0C]" }, _nonRelativeScriptOffset);
             }
         }
 
