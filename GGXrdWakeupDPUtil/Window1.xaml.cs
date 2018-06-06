@@ -26,7 +26,7 @@ namespace GGXrdWakeupDPUtil
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            _reversalTool = new ReversalTool(Dispatcher);
+            _reversalTool = new ReversalTool();
 
             try
             {
