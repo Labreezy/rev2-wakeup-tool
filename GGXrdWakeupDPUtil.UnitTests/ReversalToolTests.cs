@@ -1,5 +1,4 @@
-﻿using System.Windows.Threading;
-using GGXrdWakeupDPUtil.Library;
+﻿using GGXrdWakeupDPUtil.Library;
 using NUnit.Framework;
 
 namespace GGXrdWakeupDPUtil.UnitTests
@@ -17,7 +16,7 @@ namespace GGXrdWakeupDPUtil.UnitTests
         public void CheckValidInput_Test(string input, bool isValid)
         {
             //Arrange
-            ReversalTool reversalTool = new ReversalTool(Dispatcher.CurrentDispatcher);
+            ReversalTool reversalTool = new ReversalTool();
 
             //Act
             var result = reversalTool.CheckValidInput(input);

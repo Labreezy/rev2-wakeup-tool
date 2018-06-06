@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Windows.Threading;
 using GGXrdWakeupDPUtil.Library;
 
 namespace GGXrdWakeupDPUtil.Test
@@ -23,7 +22,7 @@ namespace GGXrdWakeupDPUtil.Test
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            _reversalTool = new ReversalTool(Dispatcher.CurrentDispatcher);
+            _reversalTool = new ReversalTool();
 
             _reversalTool.AttachToProcess();
         }
@@ -38,7 +37,7 @@ namespace GGXrdWakeupDPUtil.Test
             _reversalTool.PlayReversal();
         }
 
-        
+
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -71,6 +70,6 @@ namespace GGXrdWakeupDPUtil.Test
             _reversalTool.StopReversalLoop();
         }
 
-        
+
     }
 }

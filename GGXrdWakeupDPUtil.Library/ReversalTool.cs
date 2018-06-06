@@ -6,15 +6,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows.Threading;
 using Binarysharp.MemoryManagement;
+using Binarysharp.MemoryManagement.Memory;
 using GGXrdWakeupDPUtil.Library.Enums;
 
 namespace GGXrdWakeupDPUtil.Library
 {
     public class ReversalTool : IDisposable
     {
-        private readonly Dispatcher _dispatcher;
         private readonly string _ggprocname = ConfigurationManager.AppSettings.Get("GGProcessName");
 
 
@@ -70,20 +69,18 @@ namespace GGXrdWakeupDPUtil.Library
 
         private MemorySharp _memorySharp;
 
-        private Frida.Script _script;
-        private Frida.DeviceManager _deviceManager;
-        private Frida.Device _device;
-        private Frida.Session _session;
+
 
         private static bool _runReversalThread;
         private static readonly object RunReversalThreadLock = new object();
 
-        #region Constructors
-        public ReversalTool(Dispatcher dispatcher)
-        {
-            _dispatcher = dispatcher;
-        }
-        #endregion
+
+        private IntPtr _nonRelativeScriptOffset;
+        private RemoteAllocation _newMemoryAllocation;
+        private IntPtr _newMemoryAllocationBase;
+        private RemoteAllocation _flagMemoryAllocation;
+        private IntPtr _flagMemoryAllocationBase;
+
 
 
 
@@ -99,7 +96,38 @@ namespace GGXrdWakeupDPUtil.Library
             _memorySharp = new MemorySharp(process);
 
 
-            CreateScript(_dispatcher, _memorySharp.Pid);
+            #region Replay Injection
+            _nonRelativeScriptOffset = IntPtr.Add(_memorySharp.Modules.MainModule.BaseAddress, (int)_scriptOffset);
+            _newMemoryAllocation = _memorySharp.Memory.Allocate(128);
+            _newMemoryAllocationBase = _newMemoryAllocation.Information.AllocationBase;
+            _flagMemoryAllocation = _memorySharp.Memory.Allocate(128);
+            _flagMemoryAllocationBase = _flagMemoryAllocation.Information.AllocationBase;
+            var remoteAsmString = "mov ebp,[eax+0x40]\n" + "mov ebp,[ebp+0x0C]\n" + "cmp edi,3\n" +
+                                  $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
+                                  $"cmp BYTE [0x{IntPtr.Add(_flagMemoryAllocationBase, 1).ToString("X8")}], 1\n" +
+                                  $"je 0x{IntPtr.Add(_newMemoryAllocationBase, 0x49).ToString("X8")}\n" +
+                                  $"mov DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], 0x200\n" +
+                                  $"and DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], eax\n" +
+                                  $"cmp DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], 0x200\n" +
+                                  $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
+                                  $"mov DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], eax\n" +
+                                  $"mov BYTE [0x{IntPtr.Add(_flagMemoryAllocationBase, 1).ToString("X8")}], 1\n" +
+                                  $"jmp 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
+                                  $"cmp DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], eax\n" +
+                                  $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
+                                  $"cmp BYTE [0x{_flagMemoryAllocationBase.ToString("X8")}],0\n" +
+                                  $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
+                                  "mov ebp,[edx]\n" + $"mov BYTE [0x{_flagMemoryAllocationBase.ToString("X8")}], 1\n" +
+                                  $"jmp 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}";
+            byte[] remoteCode = _memorySharp.Assembly.Assembler.Assemble(remoteAsmString, _newMemoryAllocationBase);
+            _memorySharp.Write(_newMemoryAllocationBase, remoteCode, false);
+
+
+            #region Initialize Replay feature
+            _memorySharp.Write<byte>(_flagMemoryAllocationBase, 1, false);
+            _memorySharp.Assembly.Inject($"jmp 0x{_newMemoryAllocationBase.ToString("X8")}\nnop", _nonRelativeScriptOffset);
+            #endregion
+            #endregion
         }
 
         public NameWakeupData GetDummy()
@@ -134,12 +162,30 @@ namespace GGXrdWakeupDPUtil.Library
 
         public void PlayReversal()
         {
+            lock (_memorySharp)
+            {
 #if DEBUG
-            Console.WriteLine("Play Reversal");
+                Console.WriteLine("Reversal!");
 #endif
-            _script.Post("{\"type\": \"playback\"}");
+                _memorySharp.Write<byte>(_flagMemoryAllocationBase, 0, false);
+                Thread.Sleep(320); //20 frames, approximately, it's actually 333.333333333 ms.  Nobody should be able to be knocked down and get up in this time, causing the code to execute again.
+#if DEBUG
+                Console.WriteLine("Reversal Wait Finished!");
+#endif
+            }
+
         }
 
+
+        private void WaitAndReversal(SlotInput slotInput, int wakeupTiming)
+        {
+            int fc = FrameCount();
+            var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
+            while (FrameCount() < fc + frames)
+            {
+            }
+            PlayReversal();
+        }
 
 
         public void StartReversalLoop(SlotInput slotInput, Action errorAction = null)
@@ -153,29 +199,21 @@ namespace GGXrdWakeupDPUtil.Library
             {
                 var currentDummy = GetDummy();
                 bool localRunReversalThread = true;
+
+                //_memorySharp.Write<byte>(_flagMemoryAllocationBase, 1, false);
+
+                //_memorySharp.Assembly.Inject($"jmp 0x{_newMemoryAllocationBase.ToString("X8")}\nnop", _nonRelativeScriptOffset);
+
+
                 while (localRunReversalThread)
                 {
                     try
                     {
                         int wakeupTiming = GetWakeupTiming(currentDummy);
 
-
                         if (wakeupTiming != 0)
                         {
-                            Thread waitThread = new Thread(() =>
-                                {
-                                    int fc = FrameCount();
-                                    var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
-                                    while (FrameCount() < fc + frames)
-                                    {
-                                    }
-                                })
-                            { Name = "waitThread" };
-                            waitThread.Start();
-                            waitThread.Join();
-
-
-                            PlayReversal();
+                            WaitAndReversal(slotInput, wakeupTiming);
                         }
                     }
                     catch (Win32Exception)
@@ -357,53 +395,6 @@ namespace GGXrdWakeupDPUtil.Library
             return string.Empty;
         }
 
-        private void CreateScript(Dispatcher dispatcher, int pid)
-        {
-            if (_script == null)
-            {
-                _deviceManager = new Frida.DeviceManager(dispatcher);
-                _device = _deviceManager.EnumerateDevices().FirstOrDefault(x => x.Type == Frida.DeviceType.Local);
-
-
-
-                if (_device == null)
-                {
-                    throw new Exception("Local device not found.This application will now close.");
-                }
-
-                _session = _device.Attach((uint)pid);
-
-
-                var src =
-                    @"var xrdbase = Module.findBaseAddress('GuiltyGearXrd.exe');
-                    var hookaddr = xrdbase.add(" + "0x" + _scriptOffset.ToString("x") + @");
-                    var playingback = false;
-                    var running = true;
-                    Interceptor.attach(hookaddr, function(args){
-            	        if(playingback && this.context.edi.equals(ptr('3'))){
-                	        playingback = false;
-                	        this.context.ebp = ptr(Memory.readU32(this.context.edx).toString());
-                          }
-                        });
-                    var quit = recv('quit', function (value) {
-                       Interceptor.detachAll();
-                       running = false;
-                    });
-                    setTimeout( function () {
-                        while (running){        
-                            var op = recv('playback', function (value) {
-                            playingback=true;
-                                });
-                            op.wait();
-                        }
-                        }, 0);";
-
-                _script = _session.CreateScript(src);
-                _script.Load();
-
-
-            }
-        }
 
         private int FrameCount()
         {
@@ -433,18 +424,6 @@ namespace GGXrdWakeupDPUtil.Library
             StopReversalLoop();
 
             _memorySharp?.Dispose();
-
-
-            _script?.Post("{\"type\": \"quit\"}");
-            _script?.Post("{\"type\": \"playback\"}");
-            _script?.Unload();
-            _session?.Detach();
-
-
-            _script?.Dispose();
-            _deviceManager?.Dispose();
-            _device?.Dispose();
-            _session?.Dispose();
         }
         #endregion
 
