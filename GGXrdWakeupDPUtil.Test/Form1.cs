@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Windows.Threading;
 using GGXrdWakeupDPUtil.Library;
 
 namespace GGXrdWakeupDPUtil.Test
@@ -34,7 +35,8 @@ namespace GGXrdWakeupDPUtil.Test
 
         private void button3_Click(object sender, EventArgs e)
         {
-            _reversalTool.PlayReversal();
+            //TODO Refactor
+            // _reversalTool.PlayReversal();
         }
 
 

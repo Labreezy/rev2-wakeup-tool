@@ -21,9 +21,6 @@ namespace GGXrdWakeupDPUtil
 
         private ReversalTool _reversalTool;
 
-        private static bool _runDummyThread;
-        private static readonly object RunDummyThreadLock = new object();
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             _reversalTool = new ReversalTool();
@@ -40,13 +37,18 @@ namespace GGXrdWakeupDPUtil
             }
 
 
-            StartDummyLoop();
+            _reversalTool.DummyChanged += _reversalTool_DummyChanged;
 
 
         }
+
+        private void _reversalTool_DummyChanged(NameWakeupData dummy)
+        {
+            SetDummyName(dummy.CharName);
+        }
+
         private void Window_Closed(object sender, EventArgs e)
         {
-            StopDummyLoop();
             _reversalTool?.Dispose();
         }
 
@@ -124,86 +126,14 @@ namespace GGXrdWakeupDPUtil
             }
         }
 
-        private void StartDummyLoop()
-        {
-            lock (RunDummyThreadLock)
-            {
-                _runDummyThread = true;
-            }
 
-            Thread dummyThread = new Thread(() =>
-            {
-                NameWakeupData currentDummy = null;
-                bool localRunDummyThread = true;
-
-                while (localRunDummyThread)
-                {
-                    try
-                    {
-                        var dummy = _reversalTool.GetDummy();
-
-                        if (!Equals(dummy, currentDummy))
-                        {
-                            currentDummy = dummy;
-
-                            SetDummyName(currentDummy?.CharName);
-                        }
-                    }
-                    catch (Win32Exception)
-                    {
-                        StopDummyLoop();
-
-                        Application.Current.Shutdown();
-                        return;
-                    }
-                    catch (Exception)
-                    {
-                        StopDummyLoop();
-                        MessageBox.Show("Can't read Dummy!");
-                        Application.Current.Shutdown();
-                        return;
-                    }
-
-                    lock (RunDummyThreadLock)
-                    {
-                        localRunDummyThread = _runDummyThread;
-                    }
-
-                    Thread.Sleep(2000);
-                }
-#if DEBUG
-                Console.WriteLine(@"dummyThread ended");
-#endif
-            })
-            { Name = "dummyThread" };
-
-            dummyThread.Start();
-
-        }
-
-        private void StopDummyLoop()
-        {
-            lock (RunDummyThreadLock)
-            {
-                _runDummyThread = false;
-            }
-        }
 
         private void SetDummyName(string dummyName)
         {
-            lock (RunDummyThreadLock)
+            Dispatcher.Invoke(() =>
             {
-                if (_runDummyThread)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        DummyTextBlock.Text = $"Current Dummy: {dummyName}";
-                    });
-                }
-
-
-            }
-
+                DummyTextBlock.Text = $"Current Dummy: {dummyName}";
+            });
         }
 
         private void StopReversal()
