@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Windows.Threading;
 using GGXrdWakeupDPUtil.Library;
 
 namespace GGXrdWakeupDPUtil.Test
