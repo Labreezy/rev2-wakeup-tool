@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Binarysharp.MemoryManagement;
-using Binarysharp.MemoryManagement.Memory;
 using GGXrdWakeupDPUtil.Library.Enums;
 
 namespace GGXrdWakeupDPUtil.Library
@@ -66,20 +65,37 @@ namespace GGXrdWakeupDPUtil.Library
 
         private const int RecordingSlotSize = 4808;
 
-
         private MemorySharp _memorySharp;
 
+        #region Replay
 
+        private Binarysharp.MemoryManagement.Memory.RemoteAllocation _newMemoryAllocation;
+        private Binarysharp.MemoryManagement.Memory.RemoteAllocation _flagMemoryAllocation;
+        private IntPtr _newMemoryAllocationBase;
+        private IntPtr _flagMemoryAllocationBase;
+        private IntPtr _nonRelativeScriptOffset;
+        private static bool _written;
+        #endregion
 
+        #region Reversal Loop
         private static bool _runReversalThread;
         private static readonly object RunReversalThreadLock = new object();
+        #endregion
+
+        #region Dummy Loop
+        private static bool _runDummyThread;
+        private static readonly object RunDummyThreadLock = new object();
+
+        public delegate void DummyChangedHandler(NameWakeupData dummy);
+
+        public event DummyChangedHandler DummyChanged;
 
 
-        private IntPtr _nonRelativeScriptOffset;
-        private RemoteAllocation _newMemoryAllocation;
-        private IntPtr _newMemoryAllocationBase;
-        private RemoteAllocation _flagMemoryAllocation;
-        private IntPtr _flagMemoryAllocationBase;
+        public delegate void DummyLoopErrorHandler(Exception ex);
+
+        public event DummyLoopErrorHandler DummyLoopErrorOccured;
+        #endregion
+
 
 
 
@@ -94,40 +110,33 @@ namespace GGXrdWakeupDPUtil.Library
             }
 
             _memorySharp = new MemorySharp(process);
-
-
-            #region Replay Injection
             _nonRelativeScriptOffset = IntPtr.Add(_memorySharp.Modules.MainModule.BaseAddress, (int)_scriptOffset);
             _newMemoryAllocation = _memorySharp.Memory.Allocate(128);
             _newMemoryAllocationBase = _newMemoryAllocation.Information.AllocationBase;
             _flagMemoryAllocation = _memorySharp.Memory.Allocate(128);
             _flagMemoryAllocationBase = _flagMemoryAllocation.Information.AllocationBase;
-            var remoteAsmString = "mov ebp,[eax+0x40]\n" + "mov ebp,[ebp+0x0C]\n" + "cmp edi,3\n" +
-                                  $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
-                                  $"cmp BYTE [0x{IntPtr.Add(_flagMemoryAllocationBase, 1).ToString("X8")}], 1\n" +
-                                  $"je 0x{IntPtr.Add(_newMemoryAllocationBase, 0x49).ToString("X8")}\n" +
-                                  $"mov DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], 0x200\n" +
-                                  $"and DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], eax\n" +
-                                  $"cmp DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], 0x200\n" +
-                                  $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
-                                  $"mov DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], eax\n" +
-                                  $"mov BYTE [0x{IntPtr.Add(_flagMemoryAllocationBase, 1).ToString("X8")}], 1\n" +
-                                  $"jmp 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
-                                  $"cmp DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], eax\n" +
-                                  $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
-                                  $"cmp BYTE [0x{_flagMemoryAllocationBase.ToString("X8")}],0\n" +
-                                  $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
-                                  "mov ebp,[edx]\n" + $"mov BYTE [0x{_flagMemoryAllocationBase.ToString("X8")}], 1\n" +
-                                  $"jmp 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}";
-            byte[] remoteCode = _memorySharp.Assembly.Assembler.Assemble(remoteAsmString, _newMemoryAllocationBase);
+            string remoteAsm = "mov ebp,[eax+0x40]\n" + "mov ebp,[ebp+0x0C]\n" + "cmp edi,3\n" +
+                               $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
+                               $"cmp BYTE [0x{IntPtr.Add(_flagMemoryAllocationBase, 1).ToString("X8")}], 1\n" +
+                               $"je 0x{IntPtr.Add(_newMemoryAllocationBase, 0x49).ToString("X8")}\n" +
+                               $"mov DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], 0x200\n" +
+                               $"and DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], eax\n" +
+                               $"cmp DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], 0x200\n" +
+                               $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
+                               $"mov DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], eax\n" +
+                               $"mov BYTE [0x{IntPtr.Add(_flagMemoryAllocationBase, 1).ToString("X8")}], 1\n" +
+                               $"jmp 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
+                               $"cmp DWORD [0x{IntPtr.Add(_flagMemoryAllocationBase, 4).ToString("X8")}], eax\n" +
+                               $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" +
+                               $"cmp BYTE [0x{_flagMemoryAllocationBase.ToString("X8")}],0\n" +
+                               $"jne 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}\n" + "mov ebp,[edx]\n" +
+                               $"mov BYTE [0x{_flagMemoryAllocationBase.ToString("X8")}], 1\n" +
+                               $"jmp 0x{(_nonRelativeScriptOffset.ToInt32() + 6):X8}";
+            byte[] remoteCode = _memorySharp.Assembly.Assembler.Assemble(remoteAsm, _newMemoryAllocationBase);
             _memorySharp.Write(_newMemoryAllocationBase, remoteCode, false);
 
 
-            #region Initialize Replay feature
-            _memorySharp.Write<byte>(_flagMemoryAllocationBase, 1, false);
-            _memorySharp.Assembly.Inject($"jmp 0x{_newMemoryAllocationBase.ToString("X8")}\nnop", _nonRelativeScriptOffset);
-            #endregion
-            #endregion
+            StartDummyLoop();
         }
 
         public NameWakeupData GetDummy()
@@ -157,13 +166,24 @@ namespace GGXrdWakeupDPUtil.Library
 
             return new SlotInput(input, enumerable, wakeupFrameIndex);
         }
+        private void WaitAndReversal(SlotInput slotInput, int wakeupTiming)
+        {
+            int fc = FrameCount();
+            var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
+            while (FrameCount() < fc + frames)
+            {
+            }
+            PlayReversal(false);
+        }
 
-
-
-        public void PlayReversal()
+        public void PlayReversal(bool initialization = true)
         {
             lock (_memorySharp)
             {
+                if (initialization)
+                {
+                    InitializeReplayFeature();
+                }
 #if DEBUG
                 Console.WriteLine("Reversal!");
 #endif
@@ -173,20 +193,7 @@ namespace GGXrdWakeupDPUtil.Library
                 Console.WriteLine("Reversal Wait Finished!");
 #endif
             }
-
         }
-
-
-        private void WaitAndReversal(SlotInput slotInput, int wakeupTiming)
-        {
-            int fc = FrameCount();
-            var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
-            while (FrameCount() < fc + frames)
-            {
-            }
-            PlayReversal();
-        }
-
 
         public void StartReversalLoop(SlotInput slotInput, Action errorAction = null)
         {
@@ -200,10 +207,7 @@ namespace GGXrdWakeupDPUtil.Library
                 var currentDummy = GetDummy();
                 bool localRunReversalThread = true;
 
-                //_memorySharp.Write<byte>(_flagMemoryAllocationBase, 1, false);
-
-                //_memorySharp.Assembly.Inject($"jmp 0x{_newMemoryAllocationBase.ToString("X8")}\nnop", _nonRelativeScriptOffset);
-
+                InitializeReplayFeature();
 
                 while (localRunReversalThread)
                 {
@@ -211,7 +215,8 @@ namespace GGXrdWakeupDPUtil.Library
                     {
                         int wakeupTiming = GetWakeupTiming(currentDummy);
 
-                        if (wakeupTiming != 0)
+
+                        if (wakeupTiming != 0 && !_written)
                         {
                             WaitAndReversal(slotInput, wakeupTiming);
                         }
@@ -245,6 +250,7 @@ namespace GGXrdWakeupDPUtil.Library
             lock (RunReversalThreadLock)
             {
                 _runReversalThread = false;
+                _memorySharp.Assembly.Inject(new[] { "mov ebp,[eax+0x40]", "mov ebp,[ebp+0x0C]" }, _nonRelativeScriptOffset);
             }
         }
 
@@ -395,7 +401,6 @@ namespace GGXrdWakeupDPUtil.Library
             return string.Empty;
         }
 
-
         private int FrameCount()
         {
             return _memorySharp.Read<int>(_frameCountOffset);
@@ -416,13 +421,77 @@ namespace GGXrdWakeupDPUtil.Library
             return 0;
 
         }
+
+        private void InitializeReplayFeature()
+        {
+            _memorySharp.Write<byte>(_flagMemoryAllocationBase, 1, false);
+            _written = false;
+            _memorySharp.Assembly.Inject($"jmp 0x{_newMemoryAllocationBase.ToString("X8")}\nnop", _nonRelativeScriptOffset);
+        }
+
+        private void StartDummyLoop()
+        {
+            lock (RunDummyThreadLock)
+            {
+                _runDummyThread = true;
+            }
+
+            Thread dummyThread = new Thread(() =>
+                {
+                    NameWakeupData currentDummy = null;
+                    bool localRunDummyThread = true;
+
+                    while (localRunDummyThread && !_memorySharp.Handle.IsClosed)
+                    {
+                        try
+                        {
+                            var dummy = GetDummy();
+
+                            if (!Equals(dummy, currentDummy))
+                            {
+                                currentDummy = dummy;
+
+                                DummyChanged?.Invoke(dummy);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            StopDummyLoop();
+                            DummyLoopErrorOccured?.Invoke(ex);
+                            return;
+                        }
+
+                        lock (RunDummyThreadLock)
+                        {
+                            localRunDummyThread = _runDummyThread;
+                        }
+
+                        Thread.Sleep(2000);
+                    }
+#if DEBUG
+                    Console.WriteLine("dummyThread ended");
+#endif
+                })
+                { Name = "dummyThread" };
+
+            dummyThread.Start();
+        }
+
+        private void StopDummyLoop()
+        {
+            lock (RunDummyThreadLock)
+            {
+                _runDummyThread = false;
+            }
+        }
+
         #endregion
 
         #region Dispose Members
         public void Dispose()
         {
+            StopDummyLoop();
             StopReversalLoop();
-
             _memorySharp?.Dispose();
         }
         #endregion
