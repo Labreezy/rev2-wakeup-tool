@@ -38,11 +38,11 @@ namespace GGXrdWakeupDPUtil.Library
             new NameWakeupData("Johnny", 25, 24),
             new NameWakeupData("Jack-O'", 25, 23),
             new NameWakeupData("Jam", 26, 25),
-            new NameWakeupData("Haehyun", 25, 27),
+            new NameWakeupData("Haehyun", 22, 27),
             new NameWakeupData("Raven", 25, 24),
             new NameWakeupData("Dizzy", 25, 24),
-            new NameWakeupData("Baiken", 22, 21),
-            new NameWakeupData("Answer", 24, 24)
+            new NameWakeupData("Baiken", 25, 21),
+            new NameWakeupData("Answer", 25, 25)
         };
 
         private char FrameDelimiter = ',';
@@ -80,6 +80,9 @@ namespace GGXrdWakeupDPUtil.Library
         #region Reversal Loop
         private static bool _runReversalThread;
         private static readonly object RunReversalThreadLock = new object();
+        public delegate void ReversalLoopErrorHandler(Exception ex);
+
+        public event ReversalLoopErrorHandler ReversalLoopErrorOccured;
         #endregion
 
         #region Dummy Loop
@@ -195,7 +198,7 @@ namespace GGXrdWakeupDPUtil.Library
             }
         }
 
-        public void StartReversalLoop(SlotInput slotInput, Action errorAction = null)
+        public void StartReversalLoop(SlotInput slotInput)
         {
             lock (RunReversalThreadLock)
             {
@@ -221,9 +224,11 @@ namespace GGXrdWakeupDPUtil.Library
                             WaitAndReversal(slotInput, wakeupTiming);
                         }
                     }
-                    catch (Win32Exception)
+                    catch (Exception ex)
                     {
-                        errorAction?.Invoke();
+                        StopReversalLoop();
+                        ReversalLoopErrorOccured?.Invoke(ex);
+                        return;
                     }
 
                     lock (RunReversalThreadLock)
@@ -472,7 +477,7 @@ namespace GGXrdWakeupDPUtil.Library
                     Console.WriteLine("dummyThread ended");
 #endif
                 })
-                { Name = "dummyThread" };
+            { Name = "dummyThread" };
 
             dummyThread.Start();
         }

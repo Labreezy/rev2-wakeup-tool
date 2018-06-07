@@ -36,8 +36,14 @@ namespace GGXrdWakeupDPUtil
 
 
             _reversalTool.DummyChanged += _reversalTool_DummyChanged;
+            _reversalTool.ReversalLoopErrorOccured += _reversalTool_ReversalLoopErrorOccured;
 
 
+        }
+
+        private void _reversalTool_ReversalLoopErrorOccured(Exception ex)
+        {
+            StopReversal();
         }
 
         private void _reversalTool_DummyChanged(NameWakeupData dummy)
@@ -69,12 +75,9 @@ namespace GGXrdWakeupDPUtil
 
             var slotInput = _reversalTool.SetInputInSlot(slotNumber, InputTextBox.Text);
 
-            Action action = () =>
-            {
-                Dispatcher.Invoke(StopReversal);
-            };
+          
 
-            _reversalTool.StartReversalLoop(slotInput, action);
+            _reversalTool.StartReversalLoop(slotInput);
 
             EnableButton.IsEnabled = false;
             DisableButton.IsEnabled = true;
@@ -136,14 +139,17 @@ namespace GGXrdWakeupDPUtil
 
         private void StopReversal()
         {
-            EnableButton.IsEnabled = true;
-            DisableButton.IsEnabled = false;
-            InputTextBox.IsEnabled = true;
+            Dispatcher.Invoke(() =>
+            {
+                EnableButton.IsEnabled = true;
+                DisableButton.IsEnabled = false;
+                InputTextBox.IsEnabled = true;
 
-            Slot1R.IsEnabled = true;
-            Slot2R.IsEnabled = true;
-            Slot3R.IsEnabled = true;
-            _reversalTool.StopReversalLoop();
+                Slot1R.IsEnabled = true;
+                Slot2R.IsEnabled = true;
+                Slot3R.IsEnabled = true;
+            });
+            
         }
     }
 }
