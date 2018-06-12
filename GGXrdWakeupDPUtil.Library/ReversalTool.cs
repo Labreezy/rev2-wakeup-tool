@@ -284,6 +284,7 @@ namespace GGXrdWakeupDPUtil.Library
 
                 Random rnd = new Random();
 
+                int valueToBurst = rnd.Next(min, max + 1 + (!alwaysBurst ? 1 : 0));
 
                 while (localRunRandomBurstThread)
                 {
@@ -291,7 +292,7 @@ namespace GGXrdWakeupDPUtil.Library
                     {
                         int currentCombo = GetCurrentComboCount(1);
 
-                        int valueToBurst = rnd.Next(min, max + 1 + (!alwaysBurst ? 1 : 0));
+                       
 
                         while (currentCombo > 0)
                         {
@@ -301,6 +302,11 @@ namespace GGXrdWakeupDPUtil.Library
                             }
 
                             currentCombo = GetCurrentComboCount(1);
+
+                            if (currentCombo == 0)
+                            {
+                                valueToBurst = rnd.Next(min, max + 1 + (!alwaysBurst ? 1 : 0));
+                            }
                             Thread.Sleep(1);
                         }
 
