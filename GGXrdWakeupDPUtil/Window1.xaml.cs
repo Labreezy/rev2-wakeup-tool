@@ -42,6 +42,9 @@ namespace GGXrdWakeupDPUtil
             _reversalTool.ReversalLoopErrorOccured += _reversalTool_ReversalLoopErrorOccured;
 
 
+            RefreshBurstInfo();
+
+
         }
         private void Window_Closed(object sender, EventArgs e)
         {
@@ -223,12 +226,47 @@ namespace GGXrdWakeupDPUtil
             {
                 NumericUpDownMaxBurst.Minimum = NumericUpDownMinBurst.Value; 
             }
+
+
+            RefreshBurstInfo();
         }
         private void NumericUpDownMaxBurst_ValueChanged(object sender, RoutedEventArgs e)
         {
             if (NumericUpDownMinBurst != null && NumericUpDownMaxBurst != null)
             {
                 NumericUpDownMinBurst.Maximum = NumericUpDownMaxBurst.Value; 
+            }
+
+            RefreshBurstInfo();
+        }
+        private void AlwaysBurstCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            RefreshBurstInfo();
+        }
+
+        private void RefreshBurstInfo()
+        {
+
+            if (NumericUpDownMinBurst != null && NumericUpDownMaxBurst != null && AlwaysBurstCheckBox != null)
+            {
+                int min = NumericUpDownMinBurst.Value;
+                int max = NumericUpDownMaxBurst.Value;
+                bool alwaysBurst = AlwaysBurstCheckBox.IsChecked.HasValue && AlwaysBurstCheckBox.IsChecked.Value;
+
+                string text;
+
+                if (alwaysBurst)
+                {
+                    text = $"The dummy will burst randomly between {min} and {max} hit combo";
+                }
+                else
+                {
+                    text = $"- The dummy will burst randomly between {min} and {max} hit combo (50% chance)";
+                    text += Environment.NewLine;
+                    text += "- The dummy won't burst at all (50% chance)";
+                }
+
+                Dispatcher.Invoke(() => { BurstInfoTextBlock.Text = text; });
             }
         }
 
@@ -238,7 +276,9 @@ namespace GGXrdWakeupDPUtil
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Process.Start(_updateLink);
-        } 
+        }
         #endregion
+
+       
     }
 }
