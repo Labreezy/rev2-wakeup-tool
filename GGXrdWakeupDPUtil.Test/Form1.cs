@@ -58,6 +58,8 @@ namespace GGXrdWakeupDPUtil.Test
         {
             button6.Enabled = false;
             button7.Enabled = true;
+            button8.Enabled = false;
+            button9.Enabled = false;
             var slotInput = _reversalTool.SetInputInSlot(1, textBox1.Text);
 
             _reversalTool.StartReversalLoop(slotInput);
@@ -67,9 +69,33 @@ namespace GGXrdWakeupDPUtil.Test
         {
             button6.Enabled = true;
             button7.Enabled = false;
+            button8.Enabled = true;
+            button9.Enabled = false;
             _reversalTool.StopReversalLoop();
         }
 
+        private void button8_Click(object sender, EventArgs e)
+        {
+            button8.Enabled = false;
+            button6.Enabled = false;
+            button7.Enabled = false;
+            button9.Enabled = true;
+            numericUpDown1.Enabled = false;
+            numericUpDown2.Enabled = false;
 
+            _reversalTool.StartRandomBurstLoop((int)numericUpDown1.Value, (int)numericUpDown2.Value, 1);
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            button8.Enabled = true;
+            button6.Enabled = true;
+            button7.Enabled = true;
+            button9.Enabled = false;
+            numericUpDown1.Enabled = true;
+            numericUpDown2.Enabled = true;
+
+            _reversalTool.StopRandomBurstLoop();
+        }
     }
 }
