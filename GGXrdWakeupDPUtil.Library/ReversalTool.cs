@@ -185,6 +185,8 @@ namespace GGXrdWakeupDPUtil.Library
             {
             }
             PlayReversal(false);
+
+            Thread.Sleep(320); //20 frames, approximately, it's actually 333.333333333 ms.  Nobody should be able to be knocked down and get up in this time, causing the code to execute again.
         }
 
         public void PlayReversal(bool initialization = true)
@@ -199,7 +201,7 @@ namespace GGXrdWakeupDPUtil.Library
                 Console.WriteLine("Reversal!");
 #endif
                 _memorySharp.Write<byte>(_flagMemoryAllocationBase, 0, false);
-                Thread.Sleep(320); //20 frames, approximately, it's actually 333.333333333 ms.  Nobody should be able to be knocked down and get up in this time, causing the code to execute again.
+                
 #if DEBUG
                 Console.WriteLine("Reversal Wait Finished!");
 #endif
@@ -299,6 +301,7 @@ namespace GGXrdWakeupDPUtil.Library
                             if (currentCombo == valueToBurst && min <= valueToBurst && valueToBurst <= max)
                             {
                                 PlayReversal(false);
+                                Thread.Sleep(850); //50 frames, approximately, Burst recovery is around 50f.
                             }
 
                             currentCombo = GetCurrentComboCount(1);
