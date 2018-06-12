@@ -57,6 +57,8 @@ namespace GGXrdWakeupDPUtil.Library
         private readonly int _p2AnimStringPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2AnimStringPtrOffset"), 16);
         private readonly IntPtr _frameCountOffset = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("FrameCountOffset"), 16));
         private readonly IntPtr _scriptOffset = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("ScriptOffset"), 16));
+        private readonly IntPtr _p1ComboCountPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1ComboCountPtr"), 16));
+        private readonly int _p1ComboCountPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1ComboCountPtrOffset"), 16);
         #endregion
 
         private readonly string FaceDownAnimation = "CmnActFDown2Stand";
@@ -517,9 +519,9 @@ namespace GGXrdWakeupDPUtil.Library
 
             if (player == 1)
             {
-                var ptr = _memorySharp[(IntPtr)0x1B18C7C].Read<IntPtr>();
+                var ptr = _memorySharp[_p1ComboCountPtr].Read<IntPtr>();
 
-                return _memorySharp.Read<int>(ptr + 0X7A58, false);
+                return _memorySharp.Read<int>(ptr + _p1ComboCountPtrOffset, false);
             }
 
 
