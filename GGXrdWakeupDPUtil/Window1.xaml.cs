@@ -40,7 +40,12 @@ namespace GGXrdWakeupDPUtil
 
 
         }
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            _reversalTool?.Dispose();
+        }
 
+        #region Reversal tool events
         private void _reversalTool_ReversalLoopErrorOccured(Exception ex)
         {
             StopReversal();
@@ -50,11 +55,10 @@ namespace GGXrdWakeupDPUtil
         {
             SetDummyName(dummy.CharName);
         }
+        #endregion
 
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            _reversalTool?.Dispose();
-        }
+
+        #region Reversal
 
         private void enableButton_Click(object sender, RoutedEventArgs e)
         {
@@ -75,7 +79,7 @@ namespace GGXrdWakeupDPUtil
 
             var slotInput = _reversalTool.SetInputInSlot(slotNumber, InputTextBox.Text);
 
-          
+
 
             _reversalTool.StartReversalLoop(slotInput);
 
@@ -149,7 +153,83 @@ namespace GGXrdWakeupDPUtil
                 Slot2R.IsEnabled = true;
                 Slot3R.IsEnabled = true;
             });
-            
+
         }
+        #endregion
+
+        #region Burst
+        private void enableBurstButton_Click(object sender, RoutedEventArgs e)
+        {
+            int slotNumber = 0;
+
+            if (Slot1RBurst.IsChecked != null && Slot1RBurst.IsChecked.Value)
+            {
+                slotNumber = 1;
+            }
+            else if (Slot2RBurst.IsChecked != null && Slot2RBurst.IsChecked.Value)
+            {
+                slotNumber = 2;
+            }
+            else if (Slot3RBurst.IsChecked != null && Slot3RBurst.IsChecked.Value)
+            {
+                slotNumber = 3;
+            }
+
+            int min = NumericUpDownMinBurst.Value;
+            int max = NumericUpDownMaxBurst.Value;
+            bool alwaysBurst = AlwaysBurstCheckBox.IsChecked.HasValue && AlwaysBurstCheckBox.IsChecked.Value;
+
+            _reversalTool.StartRandomBurstLoop(min, max, slotNumber, alwaysBurst);
+
+
+
+            EnableBurstButton.IsEnabled = false;
+            DisableBurstButton.IsEnabled = true;
+            NumericUpDownMinBurst.IsEnabled = false;
+            NumericUpDownMaxBurst.IsEnabled = false;
+            AlwaysBurstCheckBox.IsEnabled = false;
+
+            Slot1RBurst.IsEnabled = false;
+            Slot2RBurst.IsEnabled = false;
+            Slot3RBurst.IsEnabled = false;
+        }
+
+        private void disableBurstButton_Click(object sender, RoutedEventArgs e)
+        {
+            StopBurst();
+        }
+        private void StopBurst()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                EnableBurstButton.IsEnabled = true;
+                DisableBurstButton.IsEnabled = false;
+                NumericUpDownMinBurst.IsEnabled = true;
+                NumericUpDownMaxBurst.IsEnabled = true;
+                AlwaysBurstCheckBox.IsEnabled = true;
+
+                Slot1RBurst.IsEnabled = true;
+                Slot2RBurst.IsEnabled = true;
+                Slot3RBurst.IsEnabled = true;
+            });
+
+        }
+        private void NumericUpDownMinBurst_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (NumericUpDownMinBurst != null && NumericUpDownMaxBurst != null)
+            {
+                NumericUpDownMaxBurst.Minimum = NumericUpDownMinBurst.Value; 
+            }
+        }
+        private void NumericUpDownMaxBurst_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (NumericUpDownMinBurst != null && NumericUpDownMaxBurst != null)
+            {
+                NumericUpDownMinBurst.Maximum = NumericUpDownMaxBurst.Value; 
+            }
+        }
+        #endregion
+
+
     }
 }

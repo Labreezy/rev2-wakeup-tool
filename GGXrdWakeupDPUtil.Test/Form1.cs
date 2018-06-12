@@ -83,7 +83,7 @@ namespace GGXrdWakeupDPUtil.Test
             numericUpDown1.Enabled = false;
             numericUpDown2.Enabled = false;
 
-            _reversalTool.StartRandomBurstLoop((int)numericUpDown1.Value, (int)numericUpDown2.Value, 1);
+            _reversalTool.StartRandomBurstLoop((int)numericUpDown1.Value, (int)numericUpDown2.Value, 1, false);
         }
 
         private void button9_Click(object sender, EventArgs e)

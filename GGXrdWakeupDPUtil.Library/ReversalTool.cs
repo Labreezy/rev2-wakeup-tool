@@ -101,6 +101,8 @@ namespace GGXrdWakeupDPUtil.Library
         #region Random Burst Loop
         private static bool _runRandomBurstThread;
         private static readonly object RunRandomBurstThreadLock = new object();
+        public delegate void RandomBurstLoopErrorHandler(Exception ex);
+        public event RandomBurstLoopErrorHandler RandomBurstlLoopErrorOccured;
         #endregion
 
 
@@ -263,7 +265,7 @@ namespace GGXrdWakeupDPUtil.Library
             }
         }
 
-        public void StartRandomBurstLoop(int min, int max, int replaySlot)
+        public void StartRandomBurstLoop(int min, int max, int replaySlot, bool alwaysBurst)
         {
             lock (RunRandomBurstThreadLock)
             {
@@ -283,33 +285,36 @@ namespace GGXrdWakeupDPUtil.Library
 
                 while (localRunRandomBurstThread)
                 {
-                    int currentCombo = GetCurrentComboCount(1);
-
-                    int valueToBurst = rnd.Next(min, max + 2);
-
-                    while (currentCombo > 0)
+                    try
                     {
-                        
-                        Console.WriteLine($"value to burst = {valueToBurst}");
+                        int currentCombo = GetCurrentComboCount(1);
 
+                        int valueToBurst = rnd.Next(min, max + 1 + (!alwaysBurst ? 1 : 0));
 
-
-
-                        if (currentCombo == valueToBurst && min <= valueToBurst && valueToBurst <= max)
+                        while (currentCombo > 0)
                         {
-                            PlayReversal(false);
+                            if (currentCombo == valueToBurst && min <= valueToBurst && valueToBurst <= max)
+                            {
+                                PlayReversal(false);
+                            }
+
+                            currentCombo = GetCurrentComboCount(1);
+                            Thread.Sleep(1);
                         }
 
-                        currentCombo = GetCurrentComboCount(1);
+
+                        lock (RunRandomBurstThreadLock)
+                        {
+                            localRunRandomBurstThread = _runRandomBurstThread;
+                        }
                         Thread.Sleep(1);
                     }
-
-
-                    lock (RunRandomBurstThreadLock)
+                    catch (Exception ex)
                     {
-                        localRunRandomBurstThread = _runRandomBurstThread;
+                        StopRandomBurstLoop();
+                        RandomBurstlLoopErrorOccured?.Invoke(ex);
+                        return;
                     }
-                    Thread.Sleep(1);
 
                 }
 
