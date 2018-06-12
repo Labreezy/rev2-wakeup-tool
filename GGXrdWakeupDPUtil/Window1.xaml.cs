@@ -228,8 +228,14 @@ namespace GGXrdWakeupDPUtil
                 NumericUpDownMinBurst.Maximum = NumericUpDownMaxBurst.Value; 
             }
         }
+
         #endregion
 
-
+        #region Menu
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://github.com/Iquis/rev2-wakeup-tool/releases");
+        } 
+        #endregion
     }
 }
