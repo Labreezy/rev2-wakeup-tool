@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
@@ -58,6 +57,8 @@ namespace GGXrdWakeupDPUtil.Library
         private readonly int _p2AnimStringPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2AnimStringPtrOffset"), 16);
         private readonly IntPtr _frameCountOffset = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("FrameCountOffset"), 16));
         private readonly IntPtr _scriptOffset = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("ScriptOffset"), 16));
+        private readonly IntPtr _p1ComboCountPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1ComboCountPtr"), 16));
+        private readonly int _p1ComboCountPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1ComboCountPtrOffset"), 16);
         #endregion
 
         private readonly string FaceDownAnimation = "CmnActFDown2Stand";
@@ -97,6 +98,13 @@ namespace GGXrdWakeupDPUtil.Library
         public delegate void DummyLoopErrorHandler(Exception ex);
 
         public event DummyLoopErrorHandler DummyLoopErrorOccured;
+        #endregion
+
+        #region Random Burst Loop
+        private static bool _runRandomBurstThread;
+        private static readonly object RunRandomBurstThreadLock = new object();
+        public delegate void RandomBurstLoopErrorHandler(Exception ex);
+        public event RandomBurstLoopErrorHandler RandomBurstlLoopErrorOccured;
         #endregion
 
 
@@ -255,6 +263,90 @@ namespace GGXrdWakeupDPUtil.Library
             lock (RunReversalThreadLock)
             {
                 _runReversalThread = false;
+                _memorySharp.Assembly.Inject(new[] { "mov ebp,[eax+0x40]", "mov ebp,[ebp+0x0C]" }, _nonRelativeScriptOffset);
+            }
+        }
+
+        public void StartRandomBurstLoop(int min, int max, int replaySlot, bool alwaysBurst)
+        {
+            lock (RunRandomBurstThreadLock)
+            {
+                _runRandomBurstThread = true;
+            }
+
+            Thread randomBurstThread = new Thread(() =>
+            {
+                bool localRunRandomBurstThread = true;
+
+                InitializeReplayFeature();
+
+                SetInputInSlot(1, "!5HD");
+
+                Random rnd = new Random();
+
+                int valueToBurst = rnd.Next(min, max + 1 + (!alwaysBurst ? 1 : 0));
+
+                while (localRunRandomBurstThread)
+                {
+                    try
+                    {
+                        int currentCombo = GetCurrentComboCount(1);
+
+                       
+
+                        while (currentCombo > 0)
+                        {
+                            if (currentCombo == valueToBurst && min <= valueToBurst && valueToBurst <= max)
+                            {
+                                PlayReversal(false);
+                            }
+
+                            currentCombo = GetCurrentComboCount(1);
+
+                            if (currentCombo == 0)
+                            {
+                                valueToBurst = rnd.Next(min, max + 1 + (!alwaysBurst ? 1 : 0));
+                            }
+                            Thread.Sleep(1);
+                        }
+
+
+                        lock (RunRandomBurstThreadLock)
+                        {
+                            localRunRandomBurstThread = _runRandomBurstThread;
+                        }
+                        Thread.Sleep(1);
+                    }
+                    catch (Exception ex)
+                    {
+                        StopRandomBurstLoop();
+                        RandomBurstlLoopErrorOccured?.Invoke(ex);
+                        return;
+                    }
+
+                }
+
+#if DEBUG
+                Console.WriteLine("randomBurstThread ended");
+#endif
+
+            })
+            {
+                Name = "randomBurstThread"
+            };
+
+            randomBurstThread.Start();
+
+            _memorySharp.Windows.MainWindow.Activate();
+        }
+
+
+
+        public void StopRandomBurstLoop()
+        {
+            lock (RunRandomBurstThreadLock)
+            {
+                _runRandomBurstThread = false;
                 _memorySharp.Assembly.Inject(new[] { "mov ebp,[eax+0x40]", "mov ebp,[ebp+0x0C]" }, _nonRelativeScriptOffset);
             }
         }
@@ -427,6 +519,21 @@ namespace GGXrdWakeupDPUtil.Library
 
         }
 
+        private int GetCurrentComboCount(int player)
+        {
+            //TODO find the pointer for player 2
+
+            if (player == 1)
+            {
+                var ptr = _memorySharp[_p1ComboCountPtr].Read<IntPtr>();
+
+                return _memorySharp.Read<int>(ptr + _p1ComboCountPtrOffset, false);
+            }
+
+
+            throw new NotImplementedException();
+        }
+
         private void InitializeReplayFeature()
         {
             _memorySharp.Write<byte>(_flagMemoryAllocationBase, 1, false);
@@ -500,6 +607,7 @@ namespace GGXrdWakeupDPUtil.Library
             _memorySharp?.Dispose();
         }
         #endregion
+
 
 
     }
