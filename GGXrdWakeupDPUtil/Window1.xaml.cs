@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Windows;
 using System.Windows.Controls;
 using GGXrdWakeupDPUtil.Library;
@@ -10,6 +11,8 @@ namespace GGXrdWakeupDPUtil
     /// </summary>
     public partial class Window1
     {
+
+        private readonly string _updateLink = ConfigurationManager.AppSettings.Get("UpdateLink");
         public Window1()
         {
             InitializeComponent();
@@ -234,7 +237,7 @@ namespace GGXrdWakeupDPUtil
         #region Menu
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Process.Start("https://github.com/Iquis/rev2-wakeup-tool/releases");
+            System.Diagnostics.Process.Start(_updateLink);
         } 
         #endregion
     }
