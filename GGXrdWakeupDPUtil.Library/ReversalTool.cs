@@ -201,7 +201,7 @@ namespace GGXrdWakeupDPUtil.Library
                 Console.WriteLine("Reversal!");
 #endif
                 _memorySharp.Write<byte>(_flagMemoryAllocationBase, 0, false);
-                
+
 #if DEBUG
                 Console.WriteLine("Reversal Wait Finished!");
 #endif
@@ -269,7 +269,7 @@ namespace GGXrdWakeupDPUtil.Library
             }
         }
 
-        public void StartRandomBurstLoop(int min, int max, int replaySlot, bool alwaysBurst)
+        public void StartRandomBurstLoop(int min, int max, int replaySlot, int burstPercentage)
         {
             lock (RunRandomBurstThreadLock)
             {
@@ -286,7 +286,8 @@ namespace GGXrdWakeupDPUtil.Library
 
                 Random rnd = new Random();
 
-                int valueToBurst = rnd.Next(min, max + 1 + (!alwaysBurst ? 1 : 0));
+                int valueToBurst = rnd.Next(min, max + 1);
+                bool willBurst = rnd.Next(0, 101) <= burstPercentage;
 
                 while (localRunRandomBurstThread)
                 {
@@ -294,21 +295,22 @@ namespace GGXrdWakeupDPUtil.Library
                     {
                         int currentCombo = GetCurrentComboCount(1);
 
-                       
+
 
                         while (currentCombo > 0)
                         {
-                            if (currentCombo == valueToBurst && min <= valueToBurst && valueToBurst <= max)
+                            if (currentCombo == valueToBurst && willBurst)
                             {
                                 PlayReversal(false);
-                                Thread.Sleep(850); //50 frames, approximately, Burst recovery is around 50f.
+                                Thread.Sleep(850); //50 frames, approximately, Burst recovery is around 50f. 
                             }
 
                             currentCombo = GetCurrentComboCount(1);
 
                             if (currentCombo == 0)
                             {
-                                valueToBurst = rnd.Next(min, max + 1 + (!alwaysBurst ? 1 : 0));
+                                valueToBurst = rnd.Next(min, max + 1);
+                                willBurst = rnd.Next(0, 101) <= burstPercentage;
                             }
                             Thread.Sleep(1);
                         }
