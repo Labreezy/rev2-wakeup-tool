@@ -42,6 +42,9 @@ namespace GGXrdWakeupDPUtil
             _reversalTool.ReversalLoopErrorOccured += _reversalTool_ReversalLoopErrorOccured;
 
 
+            RefreshBurstInfo();
+
+
         }
         private void Window_Closed(object sender, EventArgs e)
         {
@@ -89,6 +92,7 @@ namespace GGXrdWakeupDPUtil
             EnableButton.IsEnabled = false;
             DisableButton.IsEnabled = true;
             InputTextBox.IsEnabled = false;
+            BurstTabItem.IsEnabled = false;
 
             Slot1R.IsEnabled = false;
             Slot2R.IsEnabled = false;
@@ -151,6 +155,7 @@ namespace GGXrdWakeupDPUtil
                 EnableButton.IsEnabled = true;
                 DisableButton.IsEnabled = false;
                 InputTextBox.IsEnabled = true;
+                BurstTabItem.IsEnabled = false;
 
                 Slot1R.IsEnabled = true;
                 Slot2R.IsEnabled = true;
@@ -180,9 +185,9 @@ namespace GGXrdWakeupDPUtil
 
             int min = NumericUpDownMinBurst.Value;
             int max = NumericUpDownMaxBurst.Value;
-            bool alwaysBurst = AlwaysBurstCheckBox.IsChecked.HasValue && AlwaysBurstCheckBox.IsChecked.Value;
+            int burstPercentage = (int)BurstSlider.Value;
 
-            _reversalTool.StartRandomBurstLoop(min, max, slotNumber, alwaysBurst);
+            _reversalTool.StartRandomBurstLoop(min, max, slotNumber,burstPercentage);
 
 
 
@@ -190,11 +195,14 @@ namespace GGXrdWakeupDPUtil
             DisableBurstButton.IsEnabled = true;
             NumericUpDownMinBurst.IsEnabled = false;
             NumericUpDownMaxBurst.IsEnabled = false;
-            AlwaysBurstCheckBox.IsEnabled = false;
+            BurstSlider.IsEnabled = false;
+            ReversalTabItem.IsEnabled = false;
 
             Slot1RBurst.IsEnabled = false;
             Slot2RBurst.IsEnabled = false;
             Slot3RBurst.IsEnabled = false;
+
+
         }
 
         private void disableBurstButton_Click(object sender, RoutedEventArgs e)
@@ -209,7 +217,8 @@ namespace GGXrdWakeupDPUtil
                 DisableBurstButton.IsEnabled = false;
                 NumericUpDownMinBurst.IsEnabled = true;
                 NumericUpDownMaxBurst.IsEnabled = true;
-                AlwaysBurstCheckBox.IsEnabled = true;
+                BurstSlider.IsEnabled = true;
+                ReversalTabItem.IsEnabled = true;
 
                 Slot1RBurst.IsEnabled = true;
                 Slot2RBurst.IsEnabled = true;
@@ -221,14 +230,56 @@ namespace GGXrdWakeupDPUtil
         {
             if (NumericUpDownMinBurst != null && NumericUpDownMaxBurst != null)
             {
-                NumericUpDownMaxBurst.Minimum = NumericUpDownMinBurst.Value; 
+                NumericUpDownMaxBurst.Minimum = NumericUpDownMinBurst.Value;
             }
+
+
+            RefreshBurstInfo();
         }
         private void NumericUpDownMaxBurst_ValueChanged(object sender, RoutedEventArgs e)
         {
             if (NumericUpDownMinBurst != null && NumericUpDownMaxBurst != null)
             {
-                NumericUpDownMinBurst.Maximum = NumericUpDownMaxBurst.Value; 
+                NumericUpDownMinBurst.Maximum = NumericUpDownMaxBurst.Value;
+            }
+
+            RefreshBurstInfo();
+        }
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            RefreshBurstInfo();
+        }
+
+
+        private void RefreshBurstInfo()
+        {
+
+            if (NumericUpDownMinBurst != null && NumericUpDownMaxBurst != null && BurstSlider != null)
+            {
+                int min = NumericUpDownMinBurst.Value;
+                int max = NumericUpDownMaxBurst.Value;
+                int burstPercentage = (int)BurstSlider.Value;
+
+                string text;
+
+                if (burstPercentage == 100)
+                {
+                    text = $"The dummy will burst randomly between {min} and {max} hit combo";
+                }
+                else
+                {
+                    text = min == max ? 
+                        $"- The dummy will burst randomly at {min} hit combo ({burstPercentage}% chance)" : 
+                        $"- The dummy will burst randomly between {min} and {max} hit combo ({burstPercentage}% chance)";
+                    text += Environment.NewLine;
+                    text += $"- The dummy won't burst at all ({100 - burstPercentage}% chance)";
+                }
+
+                Dispatcher.Invoke(() =>
+                {
+                    BurstInfoTextBlock.Text = text;
+                    BurstPercentageLabel.Content = $"{burstPercentage}%";
+                });
             }
         }
 
@@ -238,7 +289,10 @@ namespace GGXrdWakeupDPUtil
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Process.Start(_updateLink);
-        } 
+        }
+
         #endregion
+
+
     }
 }

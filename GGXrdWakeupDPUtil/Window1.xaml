@@ -12,7 +12,7 @@
 
         <TabControl>
 
-            <TabItem Header="Reversal">
+            <TabItem x:Name="ReversalTabItem" Header="Reversal">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -39,7 +39,7 @@
                     </UniformGrid>
                 </Grid>
             </TabItem>
-            <TabItem Header="Burst">
+            <TabItem x:Name="BurstTabItem" Header="Burst">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -51,14 +51,15 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <TextBlock Text="GGXrd Rev 2 Random Burst Tool" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="1" Text="Set the hit combo range upon which the target Dummy bursts, when under attack" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="BurstInfoTextBlock" Grid.Row="1" HorizontalAlignment="Center" TextWrapping="Wrap"/>
                     <Grid Row="2" Margin="10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition />
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
+                        <Grid.ColumnDefinitions> 
                             <ColumnDefinition/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
@@ -66,7 +67,15 @@
                         <numericUpDownControl:NumericBox x:Name="NumericUpDownMinBurst" Grid.Row="1" Grid.Column="0" Width="Auto" Value="1" UseLayoutRounding="False" Minimum="1" ValueChanged="NumericUpDownMinBurst_ValueChanged" />
                         <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center">Maximum</TextBlock>
                         <numericUpDownControl:NumericBox x:Name="NumericUpDownMaxBurst" Grid.Row="1" Grid.Column="1" Width="Auto" Minimum="1" Value="100" ValueChanged="NumericUpDownMaxBurst_ValueChanged"/>
-                        <CheckBox x:Name="AlwaysBurstCheckBox" Grid.Row="2" Content="Always burst" Grid.ColumnSpan="2" Grid.Column="0" HorizontalAlignment="Center"></CheckBox>
+                        <Grid Grid.Row="2" Grid.ColumnSpan="2" Grid.Column="0" HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Label>Burst Percentage</Label>
+                            <Label Grid.Column="1" x:Name="BurstPercentageLabel">50%</Label>
+                        </Grid>
+                        <Slider x:Name="BurstSlider" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="10" Value="50" ValueChanged="Slider_ValueChanged" Maximum="100" SmallChange="1" Minimum="1"></Slider>
                     </Grid>
 
                     <UniformGrid Grid.Row="4" Columns="2">

@@ -38,14 +38,18 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.button8 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
             this.button9 = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.trackBar1 = new System.Windows.Forms.TrackBar();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
@@ -129,7 +133,7 @@
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(6, 103);
+            this.button8.Location = new System.Drawing.Point(4, 152);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(140, 23);
             this.button8.TabIndex = 8;
@@ -139,6 +143,9 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label4);
+            this.groupBox1.Controls.Add(this.label3);
+            this.groupBox1.Controls.Add(this.trackBar1);
             this.groupBox1.Controls.Add(this.button9);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
@@ -147,31 +154,43 @@
             this.groupBox1.Controls.Add(this.button8);
             this.groupBox1.Location = new System.Drawing.Point(488, 86);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(318, 148);
+            this.groupBox1.Size = new System.Drawing.Size(318, 195);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Random burst";
             // 
-            // numericUpDown1
+            // button9
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(6, 63);
-            this.numericUpDown1.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(120, 20);
-            this.numericUpDown1.TabIndex = 9;
-            this.numericUpDown1.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+            this.button9.Enabled = false;
+            this.button9.Location = new System.Drawing.Point(150, 152);
+            this.button9.Name = "button9";
+            this.button9.Size = new System.Drawing.Size(162, 23);
+            this.button9.TabIndex = 13;
+            this.button9.Text = "Stop Random Burst";
+            this.button9.UseVisualStyleBackColor = true;
+            this.button9.Click += new System.EventHandler(this.button9_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(185, 27);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(27, 13);
+            this.label2.TabIndex = 12;
+            this.label2.Text = "Max";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(13, 27);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(24, 13);
+            this.label1.TabIndex = 11;
+            this.label1.Text = "Min";
             // 
             // numericUpDown2
             // 
-            this.numericUpDown2.Location = new System.Drawing.Point(157, 63);
+            this.numericUpDown2.Location = new System.Drawing.Point(164, 47);
             this.numericUpDown2.Minimum = new decimal(new int[] {
             1,
             0,
@@ -186,34 +205,52 @@
             0,
             0});
             // 
-            // label1
+            // numericUpDown1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 43);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(24, 13);
-            this.label1.TabIndex = 11;
-            this.label1.Text = "Min";
+            this.numericUpDown1.Location = new System.Drawing.Point(13, 47);
+            this.numericUpDown1.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(120, 20);
+            this.numericUpDown1.TabIndex = 9;
+            this.numericUpDown1.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
-            // label2
+            // trackBar1
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(178, 43);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(27, 13);
-            this.label2.TabIndex = 12;
-            this.label2.Text = "Max";
+            this.trackBar1.Location = new System.Drawing.Point(4, 101);
+            this.trackBar1.Maximum = 100;
+            this.trackBar1.Minimum = 1;
+            this.trackBar1.Name = "trackBar1";
+            this.trackBar1.Size = new System.Drawing.Size(308, 45);
+            this.trackBar1.TabIndex = 14;
+            this.trackBar1.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.trackBar1.Value = 50;
+            this.trackBar1.ValueChanged += new System.EventHandler(this.trackBar1_ValueChanged);
             // 
-            // button9
+            // label3
             // 
-            this.button9.Enabled = false;
-            this.button9.Location = new System.Drawing.Point(152, 103);
-            this.button9.Name = "button9";
-            this.button9.Size = new System.Drawing.Size(162, 23);
-            this.button9.TabIndex = 13;
-            this.button9.Text = "Stop Random Burst";
-            this.button9.UseVisualStyleBackColor = true;
-            this.button9.Click += new System.EventHandler(this.button9_Click);
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(177, 85);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(27, 13);
+            this.label3.TabIndex = 10;
+            this.label3.Text = "50%";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(82, 85);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(89, 13);
+            this.label4.TabIndex = 15;
+            this.label4.Text = "Burst Percentage";
             // 
             // Form1
             // 
@@ -235,8 +272,9 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -259,6 +297,9 @@
         private System.Windows.Forms.NumericUpDown numericUpDown2;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.Button button9;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TrackBar trackBar1;
+        private System.Windows.Forms.Label label4;
     }
 }
 
