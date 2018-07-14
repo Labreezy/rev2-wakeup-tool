@@ -162,6 +162,8 @@ namespace GGXrdWakeupDPUtil
                 Slot3R.IsEnabled = true;
             });
 
+            _reversalTool.StopReversalLoop();
+
         }
         #endregion
 
@@ -224,6 +226,8 @@ namespace GGXrdWakeupDPUtil
                 Slot2RBurst.IsEnabled = true;
                 Slot3RBurst.IsEnabled = true;
             });
+
+            _reversalTool.StopRandomBurstLoop();;
 
         }
         private void NumericUpDownMinBurst_ValueChanged(object sender, RoutedEventArgs e)
