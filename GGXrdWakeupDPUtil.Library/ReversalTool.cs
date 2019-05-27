@@ -16,6 +16,7 @@ namespace GGXrdWakeupDPUtil.Library
     {
         private readonly string _ggprocname = ConfigurationManager.AppSettings.Get("GGProcessName");
 
+
         private readonly List<NameWakeupData> _nameWakeupDataList = new List<NameWakeupData>
         {
             new NameWakeupData("Sol", 25, 21),
@@ -47,10 +48,9 @@ namespace GGXrdWakeupDPUtil.Library
 
         private char FrameDelimiter = ',';
         private char WakeUpFrameDelimiter = '!';
-        private const int WakeupFrameMask = 0x200;
+        const int WakeupFrameMask = 0x200;
 
         #region Offsets
-
         private readonly IntPtr _p2IdOffset = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2IdOffset"), 16));
         private readonly IntPtr _recordingSlotPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("RecordingSlotPtr"), 16));
         private readonly IntPtr _p1AnimStringPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1AnimStringPtr"), 16));
@@ -59,8 +59,7 @@ namespace GGXrdWakeupDPUtil.Library
         private readonly int _p2AnimStringPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2AnimStringPtrOffset"), 16);
         private readonly IntPtr _frameCountOffset = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("FrameCountOffset"), 16));
         private readonly IntPtr _scriptOffset = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("ScriptOffset"), 16));
-
-        #endregion Offsets
+        #endregion
 
         private readonly string FaceDownAnimation = "CmnActFDown2Stand";
         private readonly string FaceUpAnimation = "CmnActBDown2Stand";
@@ -76,6 +75,10 @@ namespace GGXrdWakeupDPUtil.Library
         private static readonly object RunReversalThreadLock = new object();
         private IntPtr _nonRelativeScriptOffset;
         private static bool _written = false;
+        #region Constructors
+        #endregion
+
+
 
         public void AttachToProcess()
         {
@@ -94,8 +97,8 @@ namespace GGXrdWakeupDPUtil.Library
             _flagmembase = _flagmem.Information.AllocationBase;
             var remoteASMstring = String.Format("mov ebp,[eax+0x40]\n" + "mov ebp,[ebp+0x0C]\n" + "cmp edi,3\n" + "jne 0x{0}\n" + "cmp BYTE [0x{2}], 1\n" + "je 0x{3}\n" +
                 "mov DWORD [0x{4}], 0x200\n" + "and DWORD [0x{4}], eax\n" + "cmp DWORD [0x{4}], 0x200\n" + "jne 0x{0}\n" + "mov DWORD [0x{4}], eax\n" + "mov BYTE [0x{2}], 1\n" + "jmp 0x{0}\n" +
-                "cmp DWORD [0x{4}], eax\n" + "jne 0x{0}\n" + "cmp BYTE [0x{1}],0\n" + "jne 0x{0}\n" + "mov ebp,[edx]\n" + "mov BYTE [0x{1}], 1\n" + "jmp 0x{0}",
-                (_nonRelativeScriptOffset.ToInt32() + 6).ToString("X8"), _flagmembase.ToString("X8"), IntPtr.Add(_flagmembase, 1).ToString("X8"), IntPtr.Add(_newmembase, 0x49).ToString("X8"), IntPtr.Add(_flagmembase, 4).ToString("X8"));
+                "cmp DWORD [0x{4}], eax\n" + "jne 0x{0}\n" + "cmp BYTE [0x{1}],0\n" + "jne 0x{0}\n"  + "mov ebp,[edx]\n" + "mov BYTE [0x{1}], 1\n" + "jmp 0x{0}", 
+                (_nonRelativeScriptOffset.ToInt32() + 6).ToString("X8"), _flagmembase.ToString("X8"), IntPtr.Add(_flagmembase,1).ToString("X8"), IntPtr.Add(_newmembase, 0x49).ToString("X8"), IntPtr.Add(_flagmembase,4).ToString("X8"));
             _remoteCodeAOB = _memorySharp.Assembly.Assembler.Assemble(remoteASMstring, _newmembase);
             _memorySharp.Write<byte>(_newmembase, _remoteCodeAOB, false);
         }
@@ -107,6 +110,7 @@ namespace GGXrdWakeupDPUtil.Library
             var result = _nameWakeupDataList[index];
 
             return result;
+
         }
 
         public SlotInput SetInputInSlot(int slotNumber, string input)
@@ -126,7 +130,6 @@ namespace GGXrdWakeupDPUtil.Library
 
             return new SlotInput(input, enumerable, wakeupFrameIndex);
         }
-
         public void waitAndReversal(SlotInput slotInput, int wakeupTiming)
         {
             int fc = FrameCount();
@@ -146,7 +149,6 @@ namespace GGXrdWakeupDPUtil.Library
 #endif
             }
         }
-
         public void StartReversalLoop(SlotInput slotInput, Action errorAction = null)
         {
             lock (RunReversalThreadLock)
@@ -166,6 +168,7 @@ namespace GGXrdWakeupDPUtil.Library
                     try
                     {
                         int wakeupTiming = GetWakeupTiming(currentDummy);
+
 
                         if (wakeupTiming != 0 && !_written)
                         {
@@ -201,7 +204,7 @@ namespace GGXrdWakeupDPUtil.Library
             lock (RunReversalThreadLock)
             {
                 _runReversalThread = false;
-                _memorySharp.Assembly.Inject(new string[] { "mov ebp,[eax+0x40]", "mov ebp,[ebp+0x0C]" }, _nonRelativeScriptOffset);
+                _memorySharp.Assembly.Inject(new string[] { "mov ebp,[eax+0x40]" , "mov ebp,[ebp+0x0C]" }, _nonRelativeScriptOffset);
             }
         }
 
@@ -213,6 +216,8 @@ namespace GGXrdWakeupDPUtil.Library
             }
 
             var inputList = GetInputList(input);
+
+
 
             return inputList.All(x =>
             {
@@ -229,7 +234,6 @@ namespace GGXrdWakeupDPUtil.Library
         }
 
         #region Private
-
         private List<string> GetInputList(string input)
         {
             Regex whitespaceregex = new Regex(@"\s+");
@@ -291,22 +295,18 @@ namespace GGXrdWakeupDPUtil.Library
                         case 'p':
                             result |= (int)Buttons.P;
                             break;
-
                         case 'K':
                         case 'k':
                             result |= (int)Buttons.K;
                             break;
-
                         case 'S':
                         case 's':
                             result |= (int)Buttons.S;
                             break;
-
                         case 'H':
                         case 'h':
                             result |= (int)Buttons.H;
                             break;
-
                         case 'D':
                         case 'd':
                             result |= (int)Buttons.D;
@@ -325,12 +325,15 @@ namespace GGXrdWakeupDPUtil.Library
         {
             var ptr = _memorySharp[_recordingSlotPtr].Read<IntPtr>();
 
+
             var slotAddr = ptr + RecordingSlotSize * (slotNumber - 1);
+
 
             var inputList2 = inputs as short[] ?? inputs.ToArray();
             var header2 = new List<short> { 0, 0, (short)inputList2.Length, 0 };
 
             _memorySharp.Write(slotAddr, header2.Concat(inputList2).ToArray(), false);
+
         }
 
         private string ReadAnimationString(int player)
@@ -356,7 +359,6 @@ namespace GGXrdWakeupDPUtil.Library
         {
             return _memorySharp.Read<int>(_frameCountOffset);
         }
-
         private int GetWakeupTiming(NameWakeupData currentDummy)
         {
             var animationString = ReadAnimationString(2);
@@ -371,18 +373,18 @@ namespace GGXrdWakeupDPUtil.Library
             }
 
             return 0;
-        }
 
-        #endregion Private
+        }
+        #endregion
 
         #region Dispose Members
-
         public void Dispose()
         {
             StopReversalLoop();
             _memorySharp?.Dispose();
         }
+        #endregion
 
-        #endregion Dispose Members
+
     }
 }
