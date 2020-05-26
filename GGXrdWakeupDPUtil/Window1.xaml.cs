@@ -11,8 +11,6 @@ namespace GGXrdWakeupDPUtil
     /// </summary>
     public partial class Window1
     {
-
-        private readonly string _updateLink = ConfigurationManager.AppSettings.Get("UpdateLink");
         public Window1()
         {
             InitializeComponent();
@@ -20,11 +18,24 @@ namespace GGXrdWakeupDPUtil
             InputTextBox.TextChanged += inputTextBox_TextChanged;
         }
 
-        private ReversalTool _reversalTool;
+        private readonly ReversalTool _reversalTool = new ReversalTool();
+        private readonly UpdateManager _updateManager = new UpdateManager();
+        private readonly bool _autoUpdate = ConfigurationManager.AppSettings.Get("AutoUpdate") == "1";
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            _reversalTool = new ReversalTool();
+            _reversalTool.DummyChanged += _reversalTool_DummyChanged;
+            _reversalTool.ReversalLoopErrorOccured += _reversalTool_ReversalLoopErrorOccured;
+            _reversalTool.RandomBurstlLoopErrorOccured += _reversalTool_RandomBurstlLoopErrorOccured;
+            LogManager.Instance.LineReceived += LogManager_LineReceived;
+
+
+
+
+            if (_autoUpdate)
+            {
+                UpdateProcess();
+            }
 
             try
             {
@@ -38,17 +49,14 @@ namespace GGXrdWakeupDPUtil
             }
 
 
-            _reversalTool.DummyChanged += _reversalTool_DummyChanged;
-            _reversalTool.ReversalLoopErrorOccured += _reversalTool_ReversalLoopErrorOccured;
-            _reversalTool.RandomBurstlLoopErrorOccured += _reversalTool_RandomBurstlLoopErrorOccured;
-            _reversalTool.LogEvent += _reversalTool_LogEvent;
 
             RefreshBurstInfo();
 
 
         }
 
-       
+
+
 
         private void Window_Closed(object sender, EventArgs e)
         {
@@ -112,6 +120,7 @@ namespace GGXrdWakeupDPUtil
 
         private void inputTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            //TODO add watermark
             CheckValidInput();
         }
 
@@ -193,7 +202,7 @@ namespace GGXrdWakeupDPUtil
             int max = NumericUpDownMaxBurst.Value;
             int burstPercentage = (int)BurstSlider.Value;
 
-            _reversalTool.StartRandomBurstLoop(min, max, slotNumber,burstPercentage);
+            _reversalTool.StartRandomBurstLoop(min, max, slotNumber, burstPercentage);
 
 
 
@@ -231,7 +240,7 @@ namespace GGXrdWakeupDPUtil
                 Slot3RBurst.IsEnabled = true;
             });
 
-            _reversalTool.StopRandomBurstLoop();;
+            _reversalTool.StopRandomBurstLoop(); ;
 
         }
         private void AppendLog(string message)
@@ -283,8 +292,8 @@ namespace GGXrdWakeupDPUtil
                 }
                 else
                 {
-                    text = min == max ? 
-                        $"- The dummy will burst randomly at {min} hit combo ({burstPercentage}% chance)" : 
+                    text = min == max ?
+                        $"- The dummy will burst randomly at {min} hit combo ({burstPercentage}% chance)" :
                         $"- The dummy will burst randomly between {min} and {max} hit combo ({burstPercentage}% chance)";
                     text += Environment.NewLine;
                     text += $"- The dummy won't burst at all ({100 - burstPercentage}% chance)";
@@ -302,23 +311,66 @@ namespace GGXrdWakeupDPUtil
         {
             StopBurst();
         }
-        private void _reversalTool_LogEvent(object sender, string e)
+        private void LogManager_LineReceived(object sender, string e)
         {
             AppendLog(e);
         }
 
-       
+
 
         #endregion
 
         #region Menu
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Process.Start(_updateLink);
+            UpdateProcess(confirm: true);
         }
 
         #endregion
 
+        private void UpdateProcess(bool confirm = false)
+        {
+            string currentVersion = ConfigurationManager.AppSettings.Get("CurrentVersion");
 
+            LogManager.Instance.WriteLine($"Current Version is {currentVersion}");
+            try
+            {
+                var latestVersion = this._updateManager.CheckUpdates();
+
+                if (latestVersion != null)
+                {
+                    if (!confirm || MessageBox.Show("A new version is available\r\bDo you want do download it?", "New version available", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                    {
+                        LogManager.Instance.WriteLine($"Found new version : v{latestVersion.Version}");
+                        bool downloadSuccess = this._updateManager.DownloadUpdate(latestVersion);
+
+                        if (downloadSuccess)
+                        {
+                            bool installSuccess = this._updateManager.InstallUpdate();
+
+                            if (installSuccess)
+                            {
+                                this._updateManager.SaveVersion(latestVersion.Version);
+                                this._updateManager.RestartApplication();
+                            }
+                        }
+                    }
+
+                }
+                else
+                {
+                    LogManager.Instance.WriteLine("No updates");
+
+                    if (confirm)
+                    {
+                        MessageBox.Show("Your version is up to date");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogManager.Instance.WriteException(ex);
+            }
+        }
     }
 }

@@ -12,20 +12,26 @@ namespace GGXrdWakeupDPUtil.Library
 {
     public class LogManager
     {
-        private string _fileName = "Log.txt";
-
-        public event EventHandler<string> LineReceived;
-        private readonly ConcurrentQueue<string> _messageQueue = new ConcurrentQueue<string>();
-        private readonly Timer _queueTimer;
 
 
-        public LogManager()
+        #region Singleton
+        private static readonly Lazy<LogManager> lazy = new Lazy<LogManager>(() => new LogManager());
+        public static LogManager Instance => lazy.Value;
+
+        private LogManager()
         {
-            this._queueTimer = new Timer(1000);
             this._queueTimer.Elapsed += QueueTimer_Elapsed;
 
             this._queueTimer.Enabled = true;
         }
+        #endregion
+
+
+        public string FileName { get; } = "Log.txt";
+
+        public event EventHandler<string> LineReceived;
+        private readonly ConcurrentQueue<string> _messageQueue = new ConcurrentQueue<string>();
+        private readonly Timer _queueTimer = new Timer(1000);
 
         private void QueueTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -51,7 +57,7 @@ namespace GGXrdWakeupDPUtil.Library
 #if !DEBUG
             try
             {
-                using (FileStream fileStream = new FileStream(_fileName, FileMode.OpenOrCreate, FileSystemRights.AppendData, FileShare.Write, 4096, FileOptions.None))
+                using (FileStream fileStream = new FileStream(FileName, FileMode.OpenOrCreate, FileSystemRights.AppendData, FileShare.Write, 4096, FileOptions.None))
                 {
                     using (StreamWriter streamWriter = new StreamWriter(fileStream))
                     {
