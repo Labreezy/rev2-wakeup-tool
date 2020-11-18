@@ -224,7 +224,7 @@ namespace GGXrdWakeupDPUtil.Library
 
         }
 
-        public void StartWakeupReversalLoop(SlotInput slotInput, int reversalPercentage)
+        public void StartWakeupReversalLoop(SlotInput slotInput, int wakeupReversalPercentage)
         {
             lock (RunReversalThreadLock)
             {
@@ -239,7 +239,7 @@ namespace GGXrdWakeupDPUtil.Library
 
                 Random rnd = new Random();
 
-                bool willReversal = rnd.Next(0, 101) <= reversalPercentage;
+                bool willReversal = rnd.Next(0, 101) <= wakeupReversalPercentage;
 
                 this._stroke = this.GetReplayKeyStroke();
 
@@ -262,7 +262,7 @@ namespace GGXrdWakeupDPUtil.Library
                             {
                                 PlayReversal();
                             }
-                            willReversal = rnd.Next(0, 101) <= reversalPercentage;
+                            willReversal = rnd.Next(0, 101) <= wakeupReversalPercentage;
 
                             LogManager.Instance.WriteLine(willReversal.ToString());
 
@@ -391,7 +391,7 @@ namespace GGXrdWakeupDPUtil.Library
         }
 
 
-        public void StartBlockReversalLoop(SlotInput slotInput)
+        public void StartBlockReversalLoop(SlotInput slotInput, int blockstunReversalPercentage)
         {
             lock (RunBlockReversalThreadLock)
             {
@@ -404,6 +404,10 @@ namespace GGXrdWakeupDPUtil.Library
 
                     bool localRunBlockReversalThread = true;
 
+                    Random rnd = new Random();
+
+                    bool willReversal = rnd.Next(0, 101) <= blockstunReversalPercentage;
+
                     this._stroke = this.GetReplayKeyStroke();
                     int oldBlockstun = 0;
 
@@ -415,7 +419,12 @@ namespace GGXrdWakeupDPUtil.Library
 
                             if (slotInput.WakeupFrameIndex + 2 == blockStun && oldBlockstun != blockStun)
                             {
-                                this.PlayReversal();
+                                if (willReversal)
+                                {
+                                    this.PlayReversal(); 
+                                }
+
+                                willReversal = rnd.Next(0, 101) <= blockstunReversalPercentage;
 
                                 Thread.Sleep(32);
                             }

@@ -164,6 +164,18 @@ namespace GGXrdWakeupDPUtil.ViewModels
                 return Visibility.Visible;
             }
         }
+
+        private int _blockstunReversalPercentage = 100;
+        public int BlockstunReversalPercentage
+        {
+            get => _blockstunReversalPercentage;
+            set
+            {
+                _blockstunReversalPercentage = Math.Max(Math.Min(100, value), 0);
+                this.OnPropertyChanged();
+
+            }
+        }
         #endregion
 
         #region Burst
@@ -330,7 +342,7 @@ namespace GGXrdWakeupDPUtil.ViewModels
         private void StartBlockstunReversal()
         {
             SlotInput slotInput = this._reversalTool.SetInputInSlot(this.BlockstunReversalSlotNumber, this.BlockstunReversalInput);
-            this._reversalTool.StartBlockReversalLoop(slotInput);
+            this._reversalTool.StartBlockReversalLoop(slotInput, this.BlockstunReversalPercentage);
             this.IsBlockstunReversalStarted = true;
         }
         private bool CanStartBlockstunReversal()

@@ -147,7 +147,7 @@ namespace GGXrdWakeupDPUtil.Test
         {
             BlockReversalButtonEnable();
             var slotInput = _reversalTool.SetInputInSlot(1, textBox1.Text);
-            this._reversalTool.StartBlockReversalLoop(slotInput);
+            this._reversalTool.StartBlockReversalLoop(slotInput, this.trackBar2.Value);
         }
         private void button12_Click(object sender, EventArgs e)
         {
