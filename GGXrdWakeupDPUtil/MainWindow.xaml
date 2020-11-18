@@ -57,8 +57,8 @@
                         <TextBlock Text="GGXrd Rev 2 Wakeup Reversal Tool" HorizontalAlignment="Center" Grid.ColumnSpan="2" />
                         <TextBox Text="{Binding WakeupReversalInput, UpdateSourceTrigger=PropertyChanged}" Grid.ColumnSpan="2" Margin="0,16,0,0" Grid.RowSpan="2" IsEnabled="{Binding IsWakeupReversalStarted, Converter={StaticResource AntiBooleanValueConverter}}" />
                         <TextBlock Grid.Row="2" Text="Invalid Input" Foreground="Red" Visibility="{Binding WakeupReversalErrorVisibility, Mode=OneWay}" Grid.ColumnSpan="2"/>
-                        <TextBlock Grid.Row="3" Text="{Binding WakeupReversalPercentage, ConverterParameter=Reversal Percentage \{0\}%, Converter={StaticResource InterpolarConverter}}"  Grid.ColumnSpan="2"/>
-                        <Slider Grid.Row="4" Grid.ColumnSpan="2" Value="{Binding WakeupReversalPercentage}" Maximum="100" Minimum="0" IsEnabled="{Binding IsWakeupReversalStarted, Converter={StaticResource AntiBooleanValueConverter}}" />
+                        <TextBlock Grid.Row="3" Text="{Binding WakeupReversalPercentage, ConverterParameter=Reversal Percentage \{0\}%, Converter={StaticResource InterpolarConverter}}"  Grid.ColumnSpan="2" HorizontalAlignment="Center"/>
+                        <Slider Grid.Row="4" Grid.ColumnSpan="2" Value="{Binding WakeupReversalPercentage}" Maximum="100" Minimum="0" IsEnabled="{Binding IsWakeupReversalStarted, Converter={StaticResource AntiBooleanValueConverter}}" TickPlacement="BottomRight" LargeChange="20" SmallChange="1" />
                         <UniformGrid Grid.Row="5" Height="30" Columns="2" Grid.ColumnSpan="2">
                             <Button Command="{Binding StartWakeupReversalCommand}" Margin="0,0,10,0" Content="Enable"/>
                             <Button Command="{Binding StopWakeupReversalCommand}" Margin="10,0,0,0" Content="Disable"/>
