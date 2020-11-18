@@ -92,6 +92,12 @@
                     </Grid>
                 </TabItem>
                 <TabItem Header="Burst">
+                    <TabItem.IsEnabled>
+                        <MultiBinding Converter="{StaticResource FeatureRunningValueConverter}">
+                            <Binding Path="IsWakeupReversalStarted"/>
+                            <Binding Path="IsRandomBurstStarted"/>
+                        </MultiBinding>
+                    </TabItem.IsEnabled>
                     <Grid Margin="10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
