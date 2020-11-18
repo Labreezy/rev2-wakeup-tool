@@ -299,7 +299,7 @@ namespace GGXrdWakeupDPUtil.Library
                 bool localRunRandomBurstThread = true;
 
 
-                SetInputInSlot(1, "!5HD");
+                SetInputInSlot(replaySlot, "!5HD");
 
                 Random rnd = new Random();
 
