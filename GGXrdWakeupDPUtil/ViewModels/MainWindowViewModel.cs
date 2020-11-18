@@ -89,6 +89,19 @@ namespace GGXrdWakeupDPUtil.ViewModels
                 return Visibility.Visible;
             }
         }
+
+        private int _wakeupReversalPercentage = 100;
+        public int WakeupReversalPercentage
+        {
+            get => _wakeupReversalPercentage;
+            set
+            {
+                _wakeupReversalPercentage = Math.Max(Math.Min(100, value), 0);
+                this.OnPropertyChanged();
+
+            }
+        }
+
         #endregion
 
         #region BlockStun Reversal
@@ -284,7 +297,7 @@ namespace GGXrdWakeupDPUtil.ViewModels
         private void StartWakeupReversal()
         {
             SlotInput slotInput = this._reversalTool.SetInputInSlot(this.WakeupReversalSlotNumber, this.WakeupReversalInput);
-            this._reversalTool.StartWakeupReversalLoop(slotInput);
+            this._reversalTool.StartWakeupReversalLoop(slotInput, this.WakeupReversalPercentage);
             this.IsWakeupReversalStarted = true;
         }
         private bool CanStartWakeupReversal()

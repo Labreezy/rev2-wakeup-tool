@@ -64,7 +64,7 @@ namespace GGXrdWakeupDPUtil.Test
             ReversalButtonEnable();
             var slotInput = _reversalTool.SetInputInSlot(1, textBox1.Text);
 
-            _reversalTool.StartWakeupReversalLoop(slotInput);
+            _reversalTool.StartWakeupReversalLoop(slotInput, trackBar2.Value);
         }
 
         private void button7_Click(object sender, EventArgs e)
@@ -198,6 +198,11 @@ namespace GGXrdWakeupDPUtil.Test
 
             button11.Enabled = true;
             button12.Enabled = true;
+        }
+
+        private void trackBar2_ValueChanged(object sender, EventArgs e)
+        {
+            label5.Text = $@"{trackBar2.Value}%";
         }
     }
 }

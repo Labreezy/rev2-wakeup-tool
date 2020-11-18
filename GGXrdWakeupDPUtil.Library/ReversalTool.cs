@@ -224,7 +224,7 @@ namespace GGXrdWakeupDPUtil.Library
 
         }
 
-        public void StartWakeupReversalLoop(SlotInput slotInput)
+        public void StartWakeupReversalLoop(SlotInput slotInput, int reversalPercentage)
         {
             lock (RunReversalThreadLock)
             {
@@ -237,6 +237,10 @@ namespace GGXrdWakeupDPUtil.Library
                 var currentDummy = GetDummy();
                 bool localRunReversalThread = true;
 
+                Random rnd = new Random();
+
+                bool willReversal = rnd.Next(0, 101) <= reversalPercentage;
+
                 this._stroke = this.GetReplayKeyStroke();
 
                 while (localRunReversalThread && !this._process.HasExited)
@@ -248,7 +252,21 @@ namespace GGXrdWakeupDPUtil.Library
 
                         if (wakeupTiming != 0)
                         {
-                            WaitAndReversal(slotInput, wakeupTiming);
+                            int fc = FrameCount();
+                            var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
+                            while (FrameCount() < fc + frames)
+                            {
+                            }
+
+                            if (willReversal)
+                            {
+                                PlayReversal();
+                            }
+                            willReversal = rnd.Next(0, 101) <= reversalPercentage;
+
+                            LogManager.Instance.WriteLine(willReversal.ToString());
+
+                            Thread.Sleep(320); //20 frames, approximately, it's actually 333.333333333 ms.  Nobody should be able to be knocked down and get up in this time, causing the code to execute again.
                         }
                     }
                     catch (Exception ex)
@@ -709,6 +727,6 @@ namespace GGXrdWakeupDPUtil.Library
         }
         #endregion
 
-        
+
     }
 }

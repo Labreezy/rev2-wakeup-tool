@@ -48,13 +48,16 @@
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.button10 = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.button11 = new System.Windows.Forms.Button();
             this.button12 = new System.Windows.Forms.Button();
+            this.button11 = new System.Windows.Forms.Button();
+            this.trackBar2 = new System.Windows.Forms.TrackBar();
+            this.label5 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
@@ -130,7 +133,7 @@
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(174, 148);
+            this.textBox1.Location = new System.Drawing.Point(190, 237);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(266, 73);
@@ -259,7 +262,7 @@
             // 
             // button10
             // 
-            this.button10.Location = new System.Drawing.Point(12, 130);
+            this.button10.Location = new System.Drawing.Point(28, 219);
             this.button10.Name = "button10";
             this.button10.Size = new System.Drawing.Size(119, 23);
             this.button10.TabIndex = 10;
@@ -271,22 +274,12 @@
             // 
             this.groupBox2.Controls.Add(this.button12);
             this.groupBox2.Controls.Add(this.button11);
-            this.groupBox2.Location = new System.Drawing.Point(12, 238);
+            this.groupBox2.Location = new System.Drawing.Point(28, 327);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(428, 111);
             this.groupBox2.TabIndex = 11;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Block Reversal";
-            // 
-            // button11
-            // 
-            this.button11.Location = new System.Drawing.Point(7, 20);
-            this.button11.Name = "button11";
-            this.button11.Size = new System.Drawing.Size(151, 43);
-            this.button11.TabIndex = 0;
-            this.button11.Text = "Block reversal";
-            this.button11.UseVisualStyleBackColor = true;
-            this.button11.Click += new System.EventHandler(this.button11_Click);
             // 
             // button12
             // 
@@ -298,11 +291,44 @@
             this.button12.UseVisualStyleBackColor = true;
             this.button12.Click += new System.EventHandler(this.button12_Click);
             // 
+            // button11
+            // 
+            this.button11.Location = new System.Drawing.Point(7, 20);
+            this.button11.Name = "button11";
+            this.button11.Size = new System.Drawing.Size(151, 43);
+            this.button11.TabIndex = 0;
+            this.button11.Text = "Block reversal";
+            this.button11.UseVisualStyleBackColor = true;
+            this.button11.Click += new System.EventHandler(this.button11_Click);
+            // 
+            // trackBar2
+            // 
+            this.trackBar2.Location = new System.Drawing.Point(35, 149);
+            this.trackBar2.Maximum = 100;
+            this.trackBar2.Minimum = 1;
+            this.trackBar2.Name = "trackBar2";
+            this.trackBar2.Size = new System.Drawing.Size(308, 45);
+            this.trackBar2.TabIndex = 15;
+            this.trackBar2.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.trackBar2.Value = 50;
+            this.trackBar2.ValueChanged += new System.EventHandler(this.trackBar2_ValueChanged);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(177, 133);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(27, 13);
+            this.label5.TabIndex = 16;
+            this.label5.Text = "50%";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(893, 461);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.trackBar2);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.button10);
             this.Controls.Add(this.groupBox1);
@@ -324,6 +350,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.groupBox2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -353,6 +380,8 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button button11;
         private System.Windows.Forms.Button button12;
+        private System.Windows.Forms.TrackBar trackBar2;
+        private System.Windows.Forms.Label label5;
     }
 }
 
