@@ -391,7 +391,7 @@ namespace GGXrdWakeupDPUtil.Library
         }
 
 
-        public void StartBlockReversalLoop(SlotInput slotInput, int blockstunReversalPercentage)
+        public void StartBlockReversalLoop(SlotInput slotInput, int blockstunReversalPercentage, int blockstunReversalDelay)
         {
             lock (RunBlockReversalThreadLock)
             {
@@ -421,7 +421,9 @@ namespace GGXrdWakeupDPUtil.Library
                             {
                                 if (willReversal)
                                 {
-                                    this.PlayReversal(); 
+                                    this.Wait(blockstunReversalDelay);
+
+                                    this.PlayReversal();
                                 }
 
                                 willReversal = rnd.Next(0, 101) <= blockstunReversalPercentage;
@@ -668,6 +670,25 @@ namespace GGXrdWakeupDPUtil.Library
             return stroke;
         }
 
+
+        private void Wait(int frames)
+        {
+            if (frames > 0)
+            {
+                int startFrame = this.FrameCount();
+                int frameCount = 0;
+
+                while (frameCount < frames)
+                {
+                    Thread.Sleep(10);
+
+                    frameCount = this.FrameCount() - startFrame;
+                }
+            }
+        }
+
+
+        //TODO REmove?
         private void StartDummyLoop()
         {
             lock (RunDummyThreadLock)
