@@ -138,7 +138,8 @@ namespace GGXrdWakeupDPUtil.Library
             this._memoryReader = new MemoryReader(process);
 
 
-            StartDummyLoop();
+            //TODO Remove
+            //StartDummyLoop();
         }
 
         public void BringWindowToFront()
@@ -223,7 +224,7 @@ namespace GGXrdWakeupDPUtil.Library
 
         }
 
-        public void StartReversalLoop(SlotInput slotInput)
+        public void StartWakeupReversalLoop(SlotInput slotInput)
         {
             lock (RunReversalThreadLock)
             {
