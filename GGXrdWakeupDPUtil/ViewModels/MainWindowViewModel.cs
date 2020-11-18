@@ -29,6 +29,17 @@ namespace GGXrdWakeupDPUtil.ViewModels
             }
         }
 
+
+        public string DummyName
+        {
+            get => _dummyName;
+            set
+            {
+                _dummyName = value;
+                this.OnPropertyChanged();
+            }
+        }
+
         #region Wakeup Reversal
         private int _wakeupReversalSlotNumber = 1;
         public int WakeupReversalSlotNumber
@@ -421,6 +432,7 @@ namespace GGXrdWakeupDPUtil.ViewModels
         #region CheckUpdatesCommand
 
         private RelayCommand _checkUpdatesCommand;
+        private string _dummyName;
 
         public RelayCommand CheckUpdatesCommand => _checkUpdatesCommand ?? (_checkUpdatesCommand = new RelayCommand(CheckUpdates, CanCheckUpdates));
 
@@ -450,6 +462,8 @@ namespace GGXrdWakeupDPUtil.ViewModels
                 UpdateProcess();
             } 
 #endif
+
+            _reversalTool.DummyChanged += ReversalTool_DummyChanged;
             try
             {
                 _reversalTool.AttachToProcess();
@@ -466,10 +480,17 @@ namespace GGXrdWakeupDPUtil.ViewModels
             LogManager.Instance.LineReceived += LogManager_LineReceived;
         }
 
+
+
         private void LogManager_LineReceived(object sender, string e)
         {
             _logStringBuilder.AppendLine(e);
             this.OnPropertyChanged(nameof(LogText));
+        }
+
+        private void ReversalTool_DummyChanged(NameWakeupData dummy)
+        {
+            this.DummyName = dummy.CharName;
         }
 
         private void DisposeWindow()

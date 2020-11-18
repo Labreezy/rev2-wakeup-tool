@@ -18,7 +18,7 @@ namespace GGXrdWakeupDPUtil.Converters
                 return value;
             }
 
-            return parameter.ToString().Replace("{0}", value.ToString());
+            return parameter.ToString().Replace("{0}", value == null ? string.Empty : value.ToString());
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
