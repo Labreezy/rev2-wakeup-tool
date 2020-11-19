@@ -122,6 +122,7 @@
     <Compile Include="Converters\AntiBooleanValueConverter.cs" />
     <Compile Include="Converters\FeatureRunningValueConverter.cs" />
     <Compile Include="Converters\HitCounterConverter.cs" />
+    <Compile Include="Converters\InterpolarConverter.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>

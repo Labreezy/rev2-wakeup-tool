@@ -105,7 +105,7 @@ namespace GGXrdWakeupDPUtil
 
 
 
-            _reversalTool.StartWakeupReversalLoop(slotInput);
+            _reversalTool.StartWakeupReversalLoop(slotInput, 100);
 
 
             this.ReversalActivation(true);
@@ -190,7 +190,7 @@ namespace GGXrdWakeupDPUtil
 
 
 
-            _reversalTool.StartBlockReversalLoop(slotInput);
+            _reversalTool.StartBlockReversalLoop(slotInput, 100, 0);
 
             this.BlockReversalActivation(true);
         }

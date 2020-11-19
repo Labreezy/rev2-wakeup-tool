@@ -138,8 +138,7 @@ namespace GGXrdWakeupDPUtil.Library
             this._memoryReader = new MemoryReader(process);
 
 
-            //TODO Remove
-            //StartDummyLoop();
+            StartDummyLoop();
         }
 
         public void BringWindowToFront()
@@ -224,7 +223,7 @@ namespace GGXrdWakeupDPUtil.Library
 
         }
 
-        public void StartWakeupReversalLoop(SlotInput slotInput)
+        public void StartWakeupReversalLoop(SlotInput slotInput, int wakeupReversalPercentage)
         {
             lock (RunReversalThreadLock)
             {
@@ -237,6 +236,10 @@ namespace GGXrdWakeupDPUtil.Library
                 var currentDummy = GetDummy();
                 bool localRunReversalThread = true;
 
+                Random rnd = new Random();
+
+                bool willReversal = rnd.Next(0, 101) <= wakeupReversalPercentage;
+
                 this._stroke = this.GetReplayKeyStroke();
 
                 while (localRunReversalThread && !this._process.HasExited)
@@ -248,7 +251,21 @@ namespace GGXrdWakeupDPUtil.Library
 
                         if (wakeupTiming != 0)
                         {
-                            WaitAndReversal(slotInput, wakeupTiming);
+                            int fc = FrameCount();
+                            var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
+                            while (FrameCount() < fc + frames)
+                            {
+                            }
+
+                            if (willReversal)
+                            {
+                                PlayReversal();
+                            }
+                            willReversal = rnd.Next(0, 101) <= wakeupReversalPercentage;
+
+                            LogManager.Instance.WriteLine(willReversal.ToString());
+
+                            Thread.Sleep(320); //20 frames, approximately, it's actually 333.333333333 ms.  Nobody should be able to be knocked down and get up in this time, causing the code to execute again.
                         }
                     }
                     catch (Exception ex)
@@ -299,7 +316,7 @@ namespace GGXrdWakeupDPUtil.Library
                 bool localRunRandomBurstThread = true;
 
 
-                SetInputInSlot(1, "!5HD");
+                SetInputInSlot(replaySlot, "!5HD");
 
                 Random rnd = new Random();
 
@@ -373,7 +390,7 @@ namespace GGXrdWakeupDPUtil.Library
         }
 
 
-        public void StartBlockReversalLoop(SlotInput slotInput)
+        public void StartBlockReversalLoop(SlotInput slotInput, int blockstunReversalPercentage, int blockstunReversalDelay)
         {
             lock (RunBlockReversalThreadLock)
             {
@@ -386,6 +403,10 @@ namespace GGXrdWakeupDPUtil.Library
 
                     bool localRunBlockReversalThread = true;
 
+                    Random rnd = new Random();
+
+                    bool willReversal = rnd.Next(0, 101) <= blockstunReversalPercentage;
+
                     this._stroke = this.GetReplayKeyStroke();
                     int oldBlockstun = 0;
 
@@ -397,7 +418,14 @@ namespace GGXrdWakeupDPUtil.Library
 
                             if (slotInput.WakeupFrameIndex + 2 == blockStun && oldBlockstun != blockStun)
                             {
-                                this.PlayReversal();
+                                if (willReversal)
+                                {
+                                    this.Wait(blockstunReversalDelay);
+
+                                    this.PlayReversal();
+                                }
+
+                                willReversal = rnd.Next(0, 101) <= blockstunReversalPercentage;
 
                                 Thread.Sleep(32);
                             }
@@ -641,6 +669,24 @@ namespace GGXrdWakeupDPUtil.Library
             return stroke;
         }
 
+
+        private void Wait(int frames)
+        {
+            if (frames > 0)
+            {
+                int startFrame = this.FrameCount();
+                int frameCount = 0;
+
+                while (frameCount < frames)
+                {
+                    Thread.Sleep(10);
+
+                    frameCount = this.FrameCount() - startFrame;
+                }
+            }
+        }
+
+
         private void StartDummyLoop()
         {
             lock (RunDummyThreadLock)
@@ -709,6 +755,6 @@ namespace GGXrdWakeupDPUtil.Library
         }
         #endregion
 
-        
+
     }
 }

@@ -29,6 +29,17 @@ namespace GGXrdWakeupDPUtil.ViewModels
             }
         }
 
+
+        public string DummyName
+        {
+            get => _dummyName;
+            set
+            {
+                _dummyName = value;
+                this.OnPropertyChanged();
+            }
+        }
+
         #region Wakeup Reversal
         private int _wakeupReversalSlotNumber = 1;
         public int WakeupReversalSlotNumber
@@ -89,6 +100,19 @@ namespace GGXrdWakeupDPUtil.ViewModels
                 return Visibility.Visible;
             }
         }
+
+        private int _wakeupReversalPercentage = 100;
+        public int WakeupReversalPercentage
+        {
+            get => _wakeupReversalPercentage;
+            set
+            {
+                _wakeupReversalPercentage = Math.Max(Math.Min(100, value), 0);
+                this.OnPropertyChanged();
+
+            }
+        }
+
         #endregion
 
         #region BlockStun Reversal
@@ -149,6 +173,30 @@ namespace GGXrdWakeupDPUtil.ViewModels
                 }
 
                 return Visibility.Visible;
+            }
+        }
+
+        private int _blockstunReversalPercentage = 100;
+        public int BlockstunReversalPercentage
+        {
+            get => _blockstunReversalPercentage;
+            set
+            {
+                _blockstunReversalPercentage = Math.Max(Math.Min(100, value), 0);
+                this.OnPropertyChanged();
+
+            }
+        }
+
+        private int _blockstunReversalDelay = 0;
+        public int BlockstunReversalDelay
+        {
+            get => _blockstunReversalDelay;
+            set
+            {
+                _blockstunReversalDelay = Math.Max(Math.Min(100, value), 0);
+                this.OnPropertyChanged();
+
             }
         }
         #endregion
@@ -284,7 +332,7 @@ namespace GGXrdWakeupDPUtil.ViewModels
         private void StartWakeupReversal()
         {
             SlotInput slotInput = this._reversalTool.SetInputInSlot(this.WakeupReversalSlotNumber, this.WakeupReversalInput);
-            this._reversalTool.StartWakeupReversalLoop(slotInput);
+            this._reversalTool.StartWakeupReversalLoop(slotInput, this.WakeupReversalPercentage);
             this.IsWakeupReversalStarted = true;
         }
         private bool CanStartWakeupReversal()
@@ -317,7 +365,7 @@ namespace GGXrdWakeupDPUtil.ViewModels
         private void StartBlockstunReversal()
         {
             SlotInput slotInput = this._reversalTool.SetInputInSlot(this.BlockstunReversalSlotNumber, this.BlockstunReversalInput);
-            this._reversalTool.StartBlockReversalLoop(slotInput);
+            this._reversalTool.StartBlockReversalLoop(slotInput, this.BlockstunReversalPercentage, this.BlockstunReversalDelay);
             this.IsBlockstunReversalStarted = true;
         }
         private bool CanStartBlockstunReversal()
@@ -384,6 +432,7 @@ namespace GGXrdWakeupDPUtil.ViewModels
         #region CheckUpdatesCommand
 
         private RelayCommand _checkUpdatesCommand;
+        private string _dummyName;
 
         public RelayCommand CheckUpdatesCommand => _checkUpdatesCommand ?? (_checkUpdatesCommand = new RelayCommand(CheckUpdates, CanCheckUpdates));
 
@@ -413,6 +462,8 @@ namespace GGXrdWakeupDPUtil.ViewModels
                 UpdateProcess();
             } 
 #endif
+
+            _reversalTool.DummyChanged += ReversalTool_DummyChanged;
             try
             {
                 _reversalTool.AttachToProcess();
@@ -429,10 +480,17 @@ namespace GGXrdWakeupDPUtil.ViewModels
             LogManager.Instance.LineReceived += LogManager_LineReceived;
         }
 
+
+
         private void LogManager_LineReceived(object sender, string e)
         {
             _logStringBuilder.AppendLine(e);
             this.OnPropertyChanged(nameof(LogText));
+        }
+
+        private void ReversalTool_DummyChanged(NameWakeupData dummy)
+        {
+            this.DummyName = dummy.CharName;
         }
 
         private void DisposeWindow()
