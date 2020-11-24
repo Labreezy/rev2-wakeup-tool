@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Configuration;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using GGXrdWakeupDPUtil.Library;
 
@@ -203,6 +206,37 @@ namespace GGXrdWakeupDPUtil.Test
         private void trackBar2_ValueChanged(object sender, EventArgs e)
         {
             label5.Text = $@"{trackBar2.Value}%";
+        }
+
+        private void button13_Click(object sender, EventArgs e)
+        {
+            int slotNumber = 1;
+            byte[] input = this._reversalTool.ReadInputInSlot(slotNumber);
+            SaveFileDialog svd = new SaveFileDialog()
+            {
+                Filter = "Reversal Tool Replay Slot file (*.ggrs)|*.ggrs"
+            };
+
+            var dialogResult = svd.ShowDialog();
+
+            if (dialogResult == DialogResult.OK)
+            {
+                this._reversalTool.WriteInputFile(svd.FileName, input);
+            }
+        }
+
+        private void button14_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog()
+            {
+                Filter = "Reversal Tool Replay Slot file (*.ggrs)|*.ggrs"
+            };
+            var dialogResult = ofd.ShowDialog();
+            if (dialogResult == DialogResult.OK)
+            {
+                this._reversalTool.ReadInputFile(ofd.FileName);
+            }
+
         }
     }
 }

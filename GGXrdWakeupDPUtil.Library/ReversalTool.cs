@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -179,6 +181,7 @@ namespace GGXrdWakeupDPUtil.Library
             var baseAddress = this._memoryReader.ReadWithOffsets<IntPtr>(_recordingSlotPtr);
             var slotAddress = IntPtr.Add(baseAddress, RecordingSlotSize * (slotNumber - 1));
 
+            //TODO count sur 2 bytes
             var header2 = new List<ushort> { 0, 0, (ushort)inputShorts.Count, 0 };
 
             var content = header2.Concat(inputShorts).ToArray();
@@ -187,20 +190,89 @@ namespace GGXrdWakeupDPUtil.Library
 
             return new SlotInput(input, inputShorts, wakeupFrameIndex);
         }
-        public string GetInputInSlot(int slotNumber)
+        public byte[] ReadInputInSlot(int slotNumber)
         {
-            throw new NotImplementedException();
-        }
-        private void WaitAndReversal(SlotInput slotInput, int wakeupTiming)
-        {
-            int fc = FrameCount();
-            var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
-            while (FrameCount() < fc + frames)
-            {
-            }
-            PlayReversal();
+            var baseAddress = this._memoryReader.ReadWithOffsets<IntPtr>(_recordingSlotPtr);
+            var slotAddress = IntPtr.Add(baseAddress, RecordingSlotSize * (slotNumber - 1));
 
-            Thread.Sleep(320); //20 frames, approximately, it's actually 333.333333333 ms.  Nobody should be able to be knocked down and get up in this time, causing the code to execute again.
+            var readBytes = this._memoryReader.ReadBytes(slotAddress, RecordingSlotSize);
+
+            var inputLength = Byte.MaxValue * readBytes[5] + readBytes[4];
+
+            var headerLength = 4;
+
+            var length = 2 * (inputLength + headerLength);
+
+
+            byte[] result = new byte[length];
+            Array.Copy(readBytes, result, 2 * (inputLength + headerLength));
+
+            return result;
+        }
+        public bool WriteInputInSlot(int slotNumber, byte[] input)
+        {
+            try
+            {
+                var baseAddress = this._memoryReader.ReadWithOffsets<IntPtr>(_recordingSlotPtr);
+                var slotAddress = IntPtr.Add(baseAddress, RecordingSlotSize * (slotNumber - 1));
+                this._memoryReader.Write(slotAddress, input);
+                
+            }
+            catch (Exception e)
+            {
+                LogManager.Instance.WriteException(e);
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool WriteInputFile(string filePath, byte[] input)
+        {
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(filePath))
+                {
+                    writer.Write(input.Select(x =>
+                        {
+                            return x.ToString("X");
+                        })
+                        .Aggregate((a, b) => { return $"{a},{b}"; })
+                    );
+                }
+            }
+            catch (Exception e)
+            {
+                LogManager.Instance.WriteException(e);
+
+                return false;
+            }
+
+            return true;
+        }
+        public byte[] ReadInputFile(string filePath)
+        {
+            try
+            {
+                string text;
+                var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+                {
+                    text = streamReader.ReadToEnd().Trim();
+                }
+
+                var result = text.Split(',').Select(x =>
+                {
+                    return Convert.ToByte(x, 16);
+                }).ToArray();
+                return result;
+            }
+            catch (Exception e)
+            {
+                LogManager.Instance.WriteException(e);
+                return new byte[0];
+            }
+
         }
 
         public void PlayReversal()
@@ -522,7 +594,10 @@ namespace GGXrdWakeupDPUtil.Library
 
             int wakeupFrameIndex = inputList.FindLastIndex(x => x.StartsWith(WakeUpFrameDelimiter.ToString()));
 
-            result[wakeupFrameIndex] -= WakeupFrameMask;
+            if (wakeupFrameIndex >= 0)
+            {
+                result[wakeupFrameIndex] -= WakeupFrameMask;
+            }
 
             return result;
         }
@@ -531,6 +606,7 @@ namespace GGXrdWakeupDPUtil.Library
         {
             Regex inputregex = new Regex(WakeUpFrameDelimiter + @"?[1-9]{1}[PKSHD]{0,5}");
 
+            //TODO Replace by Enum Directions?
             int[] directions = { 0b0110, 0b0010, 0b1010, 0b0100, 0b0000, 0b1000, 0b0101, 0b0001, 0b1001 };
 
             if (inputregex.IsMatch(input))
@@ -580,6 +656,74 @@ namespace GGXrdWakeupDPUtil.Library
             {
                 return 0;
             }
+        }
+
+        //TODO remove?
+        private string SingleInputParse(ushort input)
+        {
+
+            string result = string.Empty;
+
+
+            //direction
+            if (IsDirectionPressed(input, Directions.Dir2) && IsDirectionPressed(input, Directions.Dir4))
+            {
+                result += "1";
+            }
+            else if (IsDirectionPressed(input, Directions.Dir2) && IsDirectionPressed(input, Directions.Dir6))
+            {
+                result += "3";
+            }
+            else if (IsDirectionPressed(input, Directions.Dir4) && IsDirectionPressed(input, Directions.Dir8))
+            {
+                result += "7";
+            }
+            else if (IsDirectionPressed(input, Directions.Dir8) && IsDirectionPressed(input, Directions.Dir6))
+            {
+                result += "9";
+            }
+            else if (IsDirectionPressed(input, Directions.Dir2))
+            {
+                result += "2";
+            }
+            else if (IsDirectionPressed(input, Directions.Dir6))
+            {
+                result += "6";
+            }
+            else if (IsDirectionPressed(input, Directions.Dir4))
+            {
+                result += "4";
+            }
+            else if (IsDirectionPressed(input, Directions.Dir8))
+            {
+                result += "8";
+            }
+            else
+            {
+                result += "5";
+            }
+
+
+            //button
+            foreach (Buttons button in Enum.GetValues(typeof(Buttons)))
+            {
+                if (IsButtonPressed(input, button))
+                {
+                    result += button.ToString();
+                }
+            }
+
+            return result;
+
+        }
+
+        private bool IsButtonPressed(ushort input, Buttons button)
+        {
+            return (input & (int)button) == (int)button;
+        }
+        private bool IsDirectionPressed(ushort input, Directions direction)
+        {
+            return (input & (int)direction) == (int)direction;
         }
 
         private string ReadAnimationString(int player)
@@ -736,7 +880,7 @@ namespace GGXrdWakeupDPUtil.Library
             dummyThread.Start();
         }
 
-        private void StopDummyLoop()
+        public void StopDummyLoop()
         {
             lock (RunDummyThreadLock)
             {
@@ -754,7 +898,5 @@ namespace GGXrdWakeupDPUtil.Library
             StopBlockReversalLoop();
         }
         #endregion
-
-
     }
 }
