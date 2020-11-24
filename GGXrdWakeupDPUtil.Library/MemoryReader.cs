@@ -55,7 +55,7 @@ namespace GGXrdWakeupDPUtil.Library
 
         }
 
-        protected byte[] ReadBytes(IntPtr address, int length)
+        public byte[] ReadBytes(IntPtr address, int length)
         {
             IntPtr handle = this._process.Handle;
             byte[] bytes = new byte[length];

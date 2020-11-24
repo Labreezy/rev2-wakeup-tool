@@ -2,8 +2,12 @@
 using System.Configuration;
 using System.Text;
 using System.Windows;
+using System.Windows.Forms;
 using GGXrdWakeupDPUtil.Commands;
 using GGXrdWakeupDPUtil.Library;
+using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace GGXrdWakeupDPUtil.ViewModels
 {
@@ -30,6 +34,8 @@ namespace GGXrdWakeupDPUtil.ViewModels
         }
 
 
+
+        private string _dummyName;
         public string DummyName
         {
             get => _dummyName;
@@ -311,6 +317,36 @@ namespace GGXrdWakeupDPUtil.ViewModels
         }
         #endregion
 
+        #region Import
+
+        private int _importSlotNumber = 1;
+        public int ImportSlotNumber
+        {
+            get => _importSlotNumber;
+            set
+            {
+                _importSlotNumber = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        #endregion
+
+        #region Export
+
+        private int _exportSlotNumber = 1;
+        public int ExportSlotNumber
+        {
+            get => _exportSlotNumber;
+            set
+            {
+                _exportSlotNumber = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        #endregion
+
         #region Commands
 
         #region Window
@@ -432,7 +468,6 @@ namespace GGXrdWakeupDPUtil.ViewModels
         #region CheckUpdatesCommand
 
         private RelayCommand _checkUpdatesCommand;
-        private string _dummyName;
 
         public RelayCommand CheckUpdatesCommand => _checkUpdatesCommand ?? (_checkUpdatesCommand = new RelayCommand(CheckUpdates, CanCheckUpdates));
 
@@ -447,6 +482,85 @@ namespace GGXrdWakeupDPUtil.ViewModels
 
 
 
+        #endregion
+
+        #region ImportCommand
+
+        private RelayCommand _importCommand;
+        public RelayCommand ImportCommand => _importCommand ?? (_importCommand = new RelayCommand(ImportCommandExecute, ImportCommandCanExecute));
+
+        private void ImportCommandExecute()
+        {
+            OpenFileDialog ofd = new OpenFileDialog()
+            {
+                Filter = "Reversal Tool Replay Slot file (*.ggrs)|*.ggrs"
+            };
+            var dialogResult = ofd.ShowDialog();
+            if (dialogResult == DialogResult.OK)
+            {
+                byte[] input = this._reversalTool.ReadInputFile(ofd.FileName);
+                bool success;
+                success = this._reversalTool.WriteInputInSlot(this.ImportSlotNumber, input);
+
+                if (success)
+                {
+                    MessageBox.Show("Import succeed");
+                    this._reversalTool.BringWindowToFront();
+                }
+                else
+                {
+                    MessageBox.Show("Import failed");
+                }
+            }
+        }
+
+        private bool ImportCommandCanExecute()
+        {
+            return
+                !this.IsWakeupReversalStarted &&
+                !this.IsBlockstunReversalStarted &&
+                !this.IsRandomBurstStarted;
+        }
+        #endregion
+
+        #region ExportCommand
+        private RelayCommand _exportCommand;
+
+        public RelayCommand ExportCommand => _exportCommand ?? (_exportCommand = new RelayCommand(ExportCommandExecute, ExportCommandCanExecute));
+
+        private void ExportCommandExecute()
+        {
+            SaveFileDialog svd = new SaveFileDialog()
+            {
+                Filter = "Reversal Tool Replay Slot file (*.ggrs)|*.ggrs"
+            };
+
+            var dialogResult = svd.ShowDialog();
+
+            if (dialogResult == true)
+            {
+                byte[] input = this._reversalTool.ReadInputInSlot(this.ExportSlotNumber);
+                var success = this._reversalTool.WriteInputFile(svd.FileName, input);
+
+
+                if (success)
+                {
+                    MessageBox.Show("Import succeed");
+                }
+                else
+                {
+                    MessageBox.Show("Import failed");
+                }
+            }
+        }
+
+        private bool ExportCommandCanExecute()
+        {
+            return
+                !this.IsWakeupReversalStarted &&
+                !this.IsBlockstunReversalStarted &&
+                !this.IsRandomBurstStarted;
+        }
         #endregion
 
         #endregion
@@ -498,6 +612,7 @@ namespace GGXrdWakeupDPUtil.ViewModels
             this._reversalTool.StopReversalLoop();
             this._reversalTool.StopBlockReversalLoop();
             this._reversalTool.StopRandomBurstLoop();
+            this._reversalTool.StopDummyLoop();
         }
 
         private void UpdateProcess(bool confirm = false)

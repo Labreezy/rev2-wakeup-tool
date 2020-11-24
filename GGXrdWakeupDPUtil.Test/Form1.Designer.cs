@@ -52,6 +52,9 @@
             this.button11 = new System.Windows.Forms.Button();
             this.trackBar2 = new System.Windows.Forms.TrackBar();
             this.label5 = new System.Windows.Forms.Label();
+            this.button13 = new System.Windows.Forms.Button();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.button14 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
@@ -322,11 +325,42 @@
             this.label5.TabIndex = 16;
             this.label5.Text = "50%";
             // 
+            // button13
+            // 
+            this.button13.Location = new System.Drawing.Point(492, 299);
+            this.button13.Name = "button13";
+            this.button13.Size = new System.Drawing.Size(75, 23);
+            this.button13.TabIndex = 17;
+            this.button13.Text = "Export input";
+            this.button13.UseVisualStyleBackColor = true;
+            this.button13.Click += new System.EventHandler(this.button13_Click);
+            // 
+            // textBox2
+            // 
+            this.textBox2.Location = new System.Drawing.Point(488, 347);
+            this.textBox2.Multiline = true;
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(266, 73);
+            this.textBox2.TabIndex = 18;
+            // 
+            // button14
+            // 
+            this.button14.Location = new System.Drawing.Point(676, 299);
+            this.button14.Name = "button14";
+            this.button14.Size = new System.Drawing.Size(75, 23);
+            this.button14.TabIndex = 19;
+            this.button14.Text = "Import input";
+            this.button14.UseVisualStyleBackColor = true;
+            this.button14.Click += new System.EventHandler(this.button14_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(893, 461);
+            this.Controls.Add(this.button14);
+            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.button13);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.trackBar2);
             this.Controls.Add(this.groupBox2);
@@ -382,6 +416,9 @@
         private System.Windows.Forms.Button button12;
         private System.Windows.Forms.TrackBar trackBar2;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button button13;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Button button14;
     }
 }
 
