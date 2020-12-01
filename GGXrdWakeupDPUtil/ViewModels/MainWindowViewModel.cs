@@ -545,11 +545,11 @@ namespace GGXrdWakeupDPUtil.ViewModels
 
                 if (success)
                 {
-                    MessageBox.Show("Import succeed");
+                    MessageBox.Show("Export succeed");
                 }
                 else
                 {
-                    MessageBox.Show("Import failed");
+                    MessageBox.Show("Export failed");
                 }
             }
         }

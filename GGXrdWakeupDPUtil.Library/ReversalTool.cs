@@ -335,9 +335,9 @@ namespace GGXrdWakeupDPUtil.Library
                             }
                             willReversal = rnd.Next(0, 101) <= wakeupReversalPercentage;
 
-                            LogManager.Instance.WriteLine(willReversal.ToString());
 
-                            Thread.Sleep(320); //20 frames, approximately, it's actually 333.333333333 ms.  Nobody should be able to be knocked down and get up in this time, causing the code to execute again.
+                            Thread.Sleep(16); // ~1 frame
+                            //Thread.Sleep(320); //20 frames, approximately, it's actually 333.333333333 ms.  Nobody should be able to be knocked down and get up in this time, causing the code to execute again.
                         }
                     }
                     catch (Exception ex)
