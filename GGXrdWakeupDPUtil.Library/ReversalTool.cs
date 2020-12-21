@@ -48,10 +48,7 @@ namespace GGXrdWakeupDPUtil.Library
             new NameWakeupData("Answer", 25, 25)
         };
 
-        private char FrameDelimiter = ',';
-        private char WakeUpFrameDelimiter = '!';
-        const int WakeupFrameMask = 0x200;
-
+        
         #region Offsets
         private readonly IntPtr _p2IdOffset = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2IdOffset"), 16));
         private readonly IntPtr _recordingSlotPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("RecordingSlotPtr"), 16));
@@ -163,32 +160,13 @@ namespace GGXrdWakeupDPUtil.Library
 
         }
 
-        public SlotInput SetInputInSlot(int slotNumber, string input)
+        public bool SetInputInSlot(int slotNumber, SlotInput slotInput)
         {
-            List<string> inputList = GetInputList(input);
-            int wakeupFrameIndex = inputList.FindLastIndex(x => x.StartsWith(WakeUpFrameDelimiter.ToString()));
-
-            if (wakeupFrameIndex < 0)
-            {
-                throw new Exception("No ! frame specified.  See the readme for more information.");
-            }
-
-            var inputShorts = GetInputShorts(inputList);
-
-            inputShorts = inputShorts as ushort[] ?? inputShorts.ToArray();
-
-
             var baseAddress = this._memoryReader.ReadWithOffsets<IntPtr>(_recordingSlotPtr);
             var slotAddress = IntPtr.Add(baseAddress, RecordingSlotSize * (slotNumber - 1));
 
-            //TODO count sur 2 bytes
-            var header2 = new List<ushort> { 0, 0, (ushort)inputShorts.Count, 0 };
 
-            var content = header2.Concat(inputShorts).ToArray();
-
-            this._memoryReader.Write(slotAddress, content);
-
-            return new SlotInput(input, inputShorts, wakeupFrameIndex);
+            return this._memoryReader.Write(slotAddress, slotInput.Content);
         }
         public byte[] ReadInputInSlot(int slotNumber)
         {
@@ -209,24 +187,7 @@ namespace GGXrdWakeupDPUtil.Library
 
             return result;
         }
-        public bool WriteInputInSlot(int slotNumber, byte[] input)
-        {
-            try
-            {
-                var baseAddress = this._memoryReader.ReadWithOffsets<IntPtr>(_recordingSlotPtr);
-                var slotAddress = IntPtr.Add(baseAddress, RecordingSlotSize * (slotNumber - 1));
-                this._memoryReader.Write(slotAddress, input);
-                
-            }
-            catch (Exception e)
-            {
-                LogManager.Instance.WriteException(e);
-                return false;
-            }
-
-            return true;
-        }
-
+        
         public bool WriteInputFile(string filePath, byte[] input)
         {
             try
@@ -273,6 +234,51 @@ namespace GGXrdWakeupDPUtil.Library
                 return new byte[0];
             }
 
+        }
+
+        public string TranslateFromFile(string filePath)
+        {
+            try
+            {
+                byte[] inputs = this.ReadInputFile(filePath);
+
+                List<string> values = new List<string>();
+
+                bool isP2 = inputs[0] == 1;
+
+                for (int i = 9; i < inputs.Length; i += 2)
+                {
+                    ushort item = (ushort)((byte.MaxValue + 1) * inputs[i] + inputs[i - 1]);
+
+                    string value = this.SingleInputParse(item, isP2);
+
+                    values.Add(value);
+
+                }
+
+                return values.Aggregate((a, b) => $"{a},{b}");
+
+            }
+            catch (Exception e)
+            {
+                LogManager.Instance.WriteException(e);
+                return string.Empty;
+            }
+        }
+
+        public bool TranslateIntoFile(string filePath, string input)
+        {
+            try
+            {
+                var slotInput = new SlotInput(input);
+
+                return this.WriteInputFile(filePath, slotInput.CleanInputs);
+            }
+            catch (Exception e)
+            {
+                LogManager.Instance.WriteException(e);
+                return false;
+            }
         }
 
         public void PlayReversal()
@@ -324,7 +330,7 @@ namespace GGXrdWakeupDPUtil.Library
                         if (wakeupTiming != 0)
                         {
                             int fc = FrameCount();
-                            var frames = wakeupTiming - slotInput.WakeupFrameIndex - 1;
+                            var frames = wakeupTiming - slotInput.ReversalFrameIndex - 1;
                             while (FrameCount() < fc + frames)
                             {
                             }
@@ -387,8 +393,8 @@ namespace GGXrdWakeupDPUtil.Library
                 LogManager.Instance.WriteLine("RandomBurst Thread start");
                 bool localRunRandomBurstThread = true;
 
-
-                SetInputInSlot(replaySlot, "!5HD");
+                var slotInput = new SlotInput("!5HD");
+                SetInputInSlot(replaySlot, slotInput);
 
                 Random rnd = new Random();
 
@@ -488,7 +494,7 @@ namespace GGXrdWakeupDPUtil.Library
                         {
                             int blockStun = this.GetBlockstun(2);
 
-                            if (slotInput.WakeupFrameIndex + 2 == blockStun && oldBlockstun != blockStun)
+                            if (slotInput.ReversalFrameIndex + 2 == blockStun && oldBlockstun != blockStun)
                             {
                                 if (willReversal)
                                 {
@@ -541,125 +547,10 @@ namespace GGXrdWakeupDPUtil.Library
             }
         }
 
-        public bool CheckValidInput(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-            {
-                return false;
-            }
-
-            var inputList = GetInputList(input);
-
-
-
-            return inputList.All(x =>
-            {
-                Regex regex = new Regex(@"^!{0,1}[1-9][PKSHDpksdh]*(?:,|$)");
-
-                return regex.IsMatch(x);
-            })
-            && inputList.Where(x =>
-            {
-                Regex regex = new Regex(@"^!{1}[1-9][PKSHDpksdh]*(?:,|$)");
-                return regex.IsMatch(x);
-            }).Count() == 1
-            ;
-        }
 
         #region Private
-        private List<string> GetInputList(string input)
-        {
-            Regex whitespaceRegex = new Regex(@"\s+");
 
-            var text = whitespaceRegex.Replace(input, "");
-
-            string[] splitText = text.Split(FrameDelimiter);
-
-            return splitText.ToList();
-        }
-
-        private IList<ushort> GetInputShorts(List<string> inputList)
-        {
-            List<ushort> result = inputList.Select(x =>
-            {
-                var value = SingleInputParse(x);
-
-                if (value == 0 && x != "5")
-                {
-                    throw new Exception("Invalid input with input '" + value + "'.  Read the README for formatting information.");
-                }
-
-                return value;
-            }).ToList();
-
-            int wakeupFrameIndex = inputList.FindLastIndex(x => x.StartsWith(WakeUpFrameDelimiter.ToString()));
-
-            if (wakeupFrameIndex >= 0)
-            {
-                result[wakeupFrameIndex] -= WakeupFrameMask;
-            }
-
-            return result;
-        }
-
-        private ushort SingleInputParse(string input)
-        {
-            Regex inputregex = new Regex(WakeUpFrameDelimiter + @"?[1-9]{1}[PKSHD]{0,5}");
-
-            //TODO Replace by Enum Directions?
-            int[] directions = { 0b0110, 0b0010, 0b1010, 0b0100, 0b0000, 0b1000, 0b0101, 0b0001, 0b1001 };
-
-            if (inputregex.IsMatch(input))
-            {
-                var result = 0;
-                if (input[0] == WakeUpFrameDelimiter)
-                {
-                    result += WakeupFrameMask;
-                    input = input.Substring(1);
-                }
-                var direction = Int32.Parse(input.Substring(0, 1));
-                result |= directions[direction - 1];
-                if (input.Length == 1)
-                {
-                    return (ushort)result;
-                }
-                var buttons = input.Substring(1).ToCharArray();
-                foreach (char button in buttons)
-                {
-                    switch (button)
-                    {
-                        case 'P':
-                        case 'p':
-                            result |= (int)Buttons.P;
-                            break;
-                        case 'K':
-                        case 'k':
-                            result |= (int)Buttons.K;
-                            break;
-                        case 'S':
-                        case 's':
-                            result |= (int)Buttons.S;
-                            break;
-                        case 'H':
-                        case 'h':
-                            result |= (int)Buttons.H;
-                            break;
-                        case 'D':
-                        case 'd':
-                            result |= (int)Buttons.D;
-                            break;
-                    }
-                }
-                return (ushort)result;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
-        //TODO remove?
-        private string SingleInputParse(ushort input)
+        private string SingleInputParse(ushort input, bool isP2 = false)
         {
 
             string result = string.Empty;
@@ -668,19 +559,19 @@ namespace GGXrdWakeupDPUtil.Library
             //direction
             if (IsDirectionPressed(input, Directions.Dir2) && IsDirectionPressed(input, Directions.Dir4))
             {
-                result += "1";
+                result += !isP2 ? "1" : "3";
             }
             else if (IsDirectionPressed(input, Directions.Dir2) && IsDirectionPressed(input, Directions.Dir6))
             {
-                result += "3";
+                result += !isP2 ? "3" : "1";
             }
             else if (IsDirectionPressed(input, Directions.Dir4) && IsDirectionPressed(input, Directions.Dir8))
             {
-                result += "7";
+                result += !isP2 ? "7" : "9";
             }
             else if (IsDirectionPressed(input, Directions.Dir8) && IsDirectionPressed(input, Directions.Dir6))
             {
-                result += "9";
+                result += !isP2 ? "9" : "7";
             }
             else if (IsDirectionPressed(input, Directions.Dir2))
             {
@@ -688,11 +579,11 @@ namespace GGXrdWakeupDPUtil.Library
             }
             else if (IsDirectionPressed(input, Directions.Dir6))
             {
-                result += "6";
+                result += !isP2 ? "6" : "4";
             }
             else if (IsDirectionPressed(input, Directions.Dir4))
             {
-                result += "4";
+                result += !isP2 ? "4" : "6";
             }
             else if (IsDirectionPressed(input, Directions.Dir8))
             {
@@ -898,5 +789,8 @@ namespace GGXrdWakeupDPUtil.Library
             StopBlockReversalLoop();
         }
         #endregion
+
+
+        
     }
 }

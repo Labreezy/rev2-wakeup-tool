@@ -49,23 +49,27 @@ namespace GGXrdWakeupDPUtil.Test
 
         private void button2_Click(object sender, EventArgs e)
         {
-            _reversalTool.SetInputInSlot(1, textBox1.Text);
+            SlotInput slotInput = new SlotInput(textBox1.Text);
+            _reversalTool.SetInputInSlot(1, slotInput);
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            _reversalTool.SetInputInSlot(2, textBox1.Text);
+            SlotInput slotInput = new SlotInput(textBox1.Text);
+            _reversalTool.SetInputInSlot(2, slotInput);
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-            _reversalTool.SetInputInSlot(3, textBox1.Text);
+            SlotInput slotInput = new SlotInput(textBox1.Text);
+            _reversalTool.SetInputInSlot(3, slotInput);
         }
 
         private void button6_Click(object sender, EventArgs e)
         {
             ReversalButtonEnable();
-            var slotInput = _reversalTool.SetInputInSlot(1, textBox1.Text);
+            SlotInput slotInput = new SlotInput(textBox1.Text);
+            _reversalTool.SetInputInSlot(1, slotInput);
 
             _reversalTool.StartWakeupReversalLoop(slotInput, trackBar2.Value);
         }
@@ -149,7 +153,8 @@ namespace GGXrdWakeupDPUtil.Test
         private void button11_Click(object sender, EventArgs e)
         {
             BlockReversalButtonEnable();
-            var slotInput = _reversalTool.SetInputInSlot(1, textBox1.Text);
+            SlotInput slotInput = new SlotInput(textBox1.Text);
+            _reversalTool.SetInputInSlot(1, slotInput);
             this._reversalTool.StartBlockReversalLoop(slotInput, this.trackBar2.Value, 0);
         }
         private void button12_Click(object sender, EventArgs e)
@@ -235,6 +240,20 @@ namespace GGXrdWakeupDPUtil.Test
             if (dialogResult == DialogResult.OK)
             {
                 this._reversalTool.ReadInputFile(ofd.FileName);
+            }
+
+        }
+
+        private void button15_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog()
+            {
+                Filter = "Reversal Tool Replay Slot file (*.ggrs)|*.ggrs"
+            };
+            var dialogResult = ofd.ShowDialog();
+            if (dialogResult == DialogResult.OK)
+            {
+                this.textBox2.Text = this._reversalTool.TranslateFromFile(ofd.FileName);
             }
 
         }

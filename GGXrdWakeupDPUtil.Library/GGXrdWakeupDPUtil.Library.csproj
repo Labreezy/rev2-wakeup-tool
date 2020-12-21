@@ -59,5 +59,6 @@
     <Compile Include="SlotInput.cs" />
     <Compile Include="UpdateManager.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
