@@ -7,7 +7,6 @@ using GGXrdWakeupDPUtil.Commands;
 using GGXrdWakeupDPUtil.Library;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
-using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace GGXrdWakeupDPUtil.ViewModels
 {
@@ -76,13 +75,38 @@ namespace GGXrdWakeupDPUtil.ViewModels
             set
             {
                 _wakeupReversalInput = value;
-                this.IsWakeupReversalInputValid = string.IsNullOrEmpty(this.WakeupReversalInput) || this._reversalTool.CheckValidInput(this.WakeupReversalInput);
+                SlotInput slotInput = new SlotInput(this.WakeupReversalInput);
+                this.IsWakeupInputValid = string.IsNullOrEmpty(this.WakeupReversalInput) || slotInput.IsValid;
+                this.IsWakeupReversalInputValid = string.IsNullOrEmpty(this.WakeupReversalInput) || slotInput.IsReversalValid;
+
+                if (!slotInput.IsValid)
+                {
+                    this.WakeupReversalErrorMessage = "Invalid Input";
+                }
+                else if (!slotInput.IsReversalValid)
+                {
+                    this.WakeupReversalErrorMessage = "Reversal frame not found";
+                }
+
+
                 this.OnPropertyChanged();
                 this.OnPropertyChanged(nameof(WakeupReversalErrorVisibility));
             }
         }
 
+        private bool _isWakeupInputValid;
+        public bool IsWakeupInputValid
+        {
+            get => _isWakeupInputValid;
+            set
+            {
+                _isWakeupInputValid = value;
+                this.OnPropertyChanged();
+            }
+        }
+
         private bool _isWakeupReversalInputValid;
+
         public bool IsWakeupReversalInputValid
         {
             get => _isWakeupReversalInputValid;
@@ -90,8 +114,8 @@ namespace GGXrdWakeupDPUtil.ViewModels
             {
                 _isWakeupReversalInputValid = value;
                 this.OnPropertyChanged();
-                this.OnPropertyChanged(nameof(WakeupReversalErrorVisibility));
             }
+
         }
 
         public Visibility WakeupReversalErrorVisibility
@@ -104,6 +128,18 @@ namespace GGXrdWakeupDPUtil.ViewModels
                 }
 
                 return Visibility.Visible;
+            }
+        }
+
+        private string _wakeupReversalErrorMessage;
+
+        public string WakeupReversalErrorMessage
+        {
+            get => _wakeupReversalErrorMessage;
+            set
+            {
+                _wakeupReversalErrorMessage = value;
+                this.OnPropertyChanged();
             }
         }
 
@@ -151,13 +187,37 @@ namespace GGXrdWakeupDPUtil.ViewModels
             set
             {
                 _blockstunReversalInput = value;
-                this.IsBlockstunReversalInputValid = string.IsNullOrEmpty(this.BlockstunReversalInput) || this._reversalTool.CheckValidInput(this.BlockstunReversalInput);
+                SlotInput slotInput = new SlotInput(this.BlockstunReversalInput);
+                this.IsBlockstunInputValid = string.IsNullOrEmpty(this.BlockstunReversalInput) || slotInput.IsValid;
+                this.IsBlockstunReversalInputValid = string.IsNullOrEmpty(this.BlockstunReversalInput) || slotInput.IsReversalValid;
+
+                if (!slotInput.IsValid)
+                {
+                    this.BlockstunReversalErrorMessage = "Invalid Input";
+                }
+                else if (!slotInput.IsReversalValid)
+                {
+                    this.BlockstunReversalErrorMessage = "Reversal frame not found";
+                }
+
                 this.OnPropertyChanged();
                 this.OnPropertyChanged(nameof(BlockstunReversalErrorVisibility));
             }
         }
 
+        private bool _isBlockstunInputValid;
+        public bool IsBlockstunInputValid
+        {
+            get => _isBlockstunInputValid;
+            set
+            {
+                _isBlockstunInputValid = value;
+                this.OnPropertyChanged();
+            }
+        }
+
         private bool _isBlockstunReversalInputValid;
+
         public bool IsBlockstunReversalInputValid
         {
             get => _isBlockstunReversalInputValid;
@@ -165,7 +225,6 @@ namespace GGXrdWakeupDPUtil.ViewModels
             {
                 _isBlockstunReversalInputValid = value;
                 this.OnPropertyChanged();
-                this.OnPropertyChanged(nameof(BlockstunReversalErrorVisibility));
             }
         }
 
@@ -179,6 +238,18 @@ namespace GGXrdWakeupDPUtil.ViewModels
                 }
 
                 return Visibility.Visible;
+            }
+        }
+
+        private string _blockstunReversalErrorMessage;
+
+        public string BlockstunReversalErrorMessage
+        {
+            get => _blockstunReversalErrorMessage;
+            set
+            {
+                _blockstunReversalErrorMessage = value;
+                this.OnPropertyChanged();
             }
         }
 
@@ -367,7 +438,8 @@ namespace GGXrdWakeupDPUtil.ViewModels
         public RelayCommand StartWakeupReversalCommand => this._startWakeupReversalCommand ?? (this._startWakeupReversalCommand = new RelayCommand(this.StartWakeupReversal, this.CanStartWakeupReversal));
         private void StartWakeupReversal()
         {
-            SlotInput slotInput = this._reversalTool.SetInputInSlot(this.WakeupReversalSlotNumber, this.WakeupReversalInput);
+            SlotInput slotInput = new SlotInput(this.WakeupReversalInput);
+            this._reversalTool.SetInputInSlot(this.WakeupReversalSlotNumber, slotInput);
             this._reversalTool.StartWakeupReversalLoop(slotInput, this.WakeupReversalPercentage);
             this.IsWakeupReversalStarted = true;
         }
@@ -400,7 +472,8 @@ namespace GGXrdWakeupDPUtil.ViewModels
         public RelayCommand StartBlockstunReversalCommand => this._startBlockstunReversalCommand ?? (this._startBlockstunReversalCommand = new RelayCommand(this.StartBlockstunReversal, this.CanStartBlockstunReversal));
         private void StartBlockstunReversal()
         {
-            SlotInput slotInput = this._reversalTool.SetInputInSlot(this.BlockstunReversalSlotNumber, this.BlockstunReversalInput);
+            SlotInput slotInput = new SlotInput(this.BlockstunReversalInput);
+            this._reversalTool.SetInputInSlot(this.BlockstunReversalSlotNumber, slotInput);
             this._reversalTool.StartBlockReversalLoop(slotInput, this.BlockstunReversalPercentage, this.BlockstunReversalDelay);
             this.IsBlockstunReversalStarted = true;
         }
@@ -498,17 +571,21 @@ namespace GGXrdWakeupDPUtil.ViewModels
             var dialogResult = ofd.ShowDialog();
             if (dialogResult == DialogResult.OK)
             {
-                byte[] input = this._reversalTool.ReadInputFile(ofd.FileName);
-                bool success;
-                success = this._reversalTool.WriteInputInSlot(this.ImportSlotNumber, input);
+                var bytes = this._reversalTool.ReadInputFile(ofd.FileName);
+                SlotInput slotInput = new SlotInput(bytes);
+
+                bool success = slotInput.IsValid && this._reversalTool.SetInputInSlot(this.ImportSlotNumber, slotInput);
+
 
                 if (success)
                 {
+                    LogManager.Instance.WriteLine($"Inputs imported from file {ofd.FileName} to slot number {this.ImportSlotNumber}");
                     MessageBox.Show("Import succeed");
                     this._reversalTool.BringWindowToFront();
                 }
                 else
                 {
+                    LogManager.Instance.WriteLine($"Failed to import Inputs from file {ofd.FileName} to slot number {this.ImportSlotNumber}");
                     MessageBox.Show("Import failed");
                 }
             }
@@ -537,18 +614,21 @@ namespace GGXrdWakeupDPUtil.ViewModels
 
             var dialogResult = svd.ShowDialog();
 
-            if (dialogResult == true)
+            if (dialogResult == DialogResult.OK)
             {
                 byte[] input = this._reversalTool.ReadInputInSlot(this.ExportSlotNumber);
+
                 var success = this._reversalTool.WriteInputFile(svd.FileName, input);
 
 
                 if (success)
                 {
+                    LogManager.Instance.WriteLine($"Inputs exported from slot number {this.ExportSlotNumber} to file {svd.FileName}");
                     MessageBox.Show("Export succeed");
                 }
                 else
                 {
+                    LogManager.Instance.WriteLine($"Failed to export inputs from slot number {this.ExportSlotNumber} to file {svd.FileName}");
                     MessageBox.Show("Export failed");
                 }
             }
@@ -561,6 +641,148 @@ namespace GGXrdWakeupDPUtil.ViewModels
                 !this.IsBlockstunReversalStarted &&
                 !this.IsRandomBurstStarted;
         }
+        #endregion
+
+        #region Translate
+
+        #region Wakeup
+        private RelayCommand _wakeupTranslateFromFileCommand;
+        public RelayCommand WakeupTranslateFromFileCommand => _wakeupTranslateFromFileCommand ?? (_wakeupTranslateFromFileCommand = new RelayCommand(WakeupTranslateFromFileCommandExecute, WakeupTranslateFromFileCommandCanExecute));
+
+        private void WakeupTranslateFromFileCommandExecute()
+        {
+            OpenFileDialog ofd = new OpenFileDialog()
+            {
+                Filter = "Reversal Tool Replay Slot file (*.ggrs)|*.ggrs"
+            };
+            var dialogResult = ofd.ShowDialog();
+            if (dialogResult == DialogResult.OK)
+            {
+                string input = this._reversalTool.TranslateFromFile(ofd.FileName);
+
+                if (string.IsNullOrEmpty(input))
+                {
+                    LogManager.Instance.WriteLine($"Failed to import inputs from file {ofd.FileName} to Wakeup Reversal");
+                }
+                else
+                {
+                    this.WakeupReversalInput = input;
+
+                    LogManager.Instance.WriteLine($"Inputs imported from file {ofd.FileName} to Wakeup Reversal");
+                }
+
+            }
+        }
+
+        private bool WakeupTranslateFromFileCommandCanExecute()
+        {
+            return !IsWakeupReversalStarted;
+        }
+
+
+        private RelayCommand _wakeupTranslateIntoFileCommand;
+        public RelayCommand WakeupTranslateIntoFileCommand => _wakeupTranslateIntoFileCommand ?? (_wakeupTranslateIntoFileCommand = new RelayCommand(WakeupTranslateIntoFileCommandExecute, WakeupTranslateIntoFileCommandCanExecute));
+
+        private void WakeupTranslateIntoFileCommandExecute()
+        {
+            SaveFileDialog svd = new SaveFileDialog()
+            {
+                Filter = "Reversal Tool Replay Slot file (*.ggrs)|*.ggrs"
+            };
+
+            var dialogResult = svd.ShowDialog();
+
+            if (dialogResult == DialogResult.OK)
+            {
+                var success = this._reversalTool.TranslateIntoFile(svd.FileName, this.WakeupReversalInput);
+
+                if (success)
+                {
+                    LogManager.Instance.WriteLine($"Inputs exported from Wakeup Reversal to file {svd.FileName}");
+                }
+                else
+                {
+                    LogManager.Instance.WriteLine($"Failed to export inputs from Wakeup Reversal to file {svd.FileName}");
+                }
+            }
+        }
+
+        private bool WakeupTranslateIntoFileCommandCanExecute()
+        {
+            return !string.IsNullOrEmpty(this.WakeupReversalInput) && IsWakeupInputValid;
+        }
+        #endregion
+
+        #region Blockstun
+        private RelayCommand _blockstunTranslateFromFileCommand;
+        public RelayCommand BlockstunTranslateFromFileCommand => _blockstunTranslateFromFileCommand ?? (_blockstunTranslateFromFileCommand = new RelayCommand(BlockstunTranslateFromFileCommandExecute, BlockstunTranslateFromFileCommandCanExecute));
+
+        private void BlockstunTranslateFromFileCommandExecute()
+        {
+            OpenFileDialog ofd = new OpenFileDialog()
+            {
+                Filter = "Reversal Tool Replay Slot file (*.ggrs)|*.ggrs"
+            };
+
+            var dialogResult = ofd.ShowDialog();
+            if (dialogResult == DialogResult.OK)
+            {
+                string input = this._reversalTool.TranslateFromFile(ofd.FileName);
+
+                if (string.IsNullOrEmpty(input))
+                {
+                    LogManager.Instance.WriteLine($"Failed to import inputs from file {ofd.FileName} to Blockstun Reversal");
+                }
+                else
+                {
+                    this.BlockstunReversalInput = input;
+
+                    LogManager.Instance.WriteLine($"Inputs imported from file {ofd.FileName} to Blockstun Reversal");
+                }
+            }
+        }
+
+        private bool BlockstunTranslateFromFileCommandCanExecute()
+        {
+            return !IsBlockstunReversalStarted;
+        }
+
+
+        private RelayCommand _blockstunTranslateIntoFileCommand;
+        public RelayCommand BlockstunTranslateIntoFileCommand => _blockstunTranslateIntoFileCommand ?? (_blockstunTranslateIntoFileCommand = new RelayCommand(BlockstunTranslateIntoFileCommandExecute, BlockstunTranslateIntoFileCommandCanExecute));
+
+        private void BlockstunTranslateIntoFileCommandExecute()
+        {
+            SaveFileDialog svd = new SaveFileDialog()
+            {
+                Filter = "Reversal Tool Replay Slot file (*.ggrs)|*.ggrs"
+            };
+
+            var dialogResult = svd.ShowDialog();
+
+            if (dialogResult == DialogResult.OK)
+            {
+                var success = this._reversalTool.TranslateIntoFile(svd.FileName, this.BlockstunReversalInput);
+
+                if (success)
+                {
+                    LogManager.Instance.WriteLine($"Inputs exported from Blockstun Reversal to file {svd.FileName}");
+                }
+                else
+                {
+                    LogManager.Instance.WriteLine($"Failed to export inputs from Blockstun Reversal to file {svd.FileName}");
+                }
+            }
+        }
+
+        private bool BlockstunTranslateIntoFileCommandCanExecute()
+        {
+            return !string.IsNullOrEmpty(this.BlockstunReversalInput) && IsBlockstunInputValid;
+        }
+        #endregion
+
+
+
         #endregion
 
         #endregion

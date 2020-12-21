@@ -35,13 +35,16 @@ namespace GGXrdWakeupDPUtil.Library
             this._process = process;
         }
 
-        public void Write(IntPtr address, byte[] bytes)
+        //TODO Remove?
+        public bool Write(IntPtr address, IEnumerable<byte> bytes)
         {
             IntPtr handle = this._process.Handle;
             int lpNumberOfBytesRead = 0;
-            WriteProcessMemory(handle, address, bytes, bytes.Length, ref lpNumberOfBytesRead);
+            return WriteProcessMemory(handle, address, bytes.ToArray(), bytes.Count(), ref lpNumberOfBytesRead);
         }
-        public void Write(IntPtr address, IEnumerable<ushort> shorts)
+
+
+        public bool Write(IntPtr address, IEnumerable<ushort> shorts)
         {
             List<byte> bytes = new List<byte>();
 
@@ -51,7 +54,7 @@ namespace GGXrdWakeupDPUtil.Library
                 bytes.Add((byte)((@ushort >> 8) & 0xFF));
             }
 
-            Write(address, bytes.ToArray());
+            return Write(address, bytes.ToArray());
 
         }
 

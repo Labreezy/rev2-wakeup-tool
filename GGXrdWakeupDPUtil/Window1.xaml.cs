@@ -101,7 +101,9 @@ namespace GGXrdWakeupDPUtil
                 slotNumber = 3;
             }
 
-            var slotInput = _reversalTool.SetInputInSlot(slotNumber, InputTextBox.Text);
+
+            var slotInput = new SlotInput(InputTextBox.Text);
+            _reversalTool.SetInputInSlot(slotNumber, slotInput);
 
 
 
@@ -123,8 +125,9 @@ namespace GGXrdWakeupDPUtil
             //TODO add watermark
 
             var text = this.InputTextBox.Text;
+            SlotInput slotInput = new SlotInput(text);
 
-            if (this._reversalTool.CheckValidInput(text))
+            if (slotInput.IsReversalValid)
             {
                 ErrorTextBlock.Visibility = Visibility.Hidden;
                 EnableButton.IsEnabled = true;
@@ -186,7 +189,8 @@ namespace GGXrdWakeupDPUtil
                 slotNumber = 3;
             }
 
-            var slotInput = _reversalTool.SetInputInSlot(slotNumber, BlockReversalInputTextBox.Text);
+            var slotInput = new SlotInput(BlockReversalInputTextBox.Text);
+            _reversalTool.SetInputInSlot(slotNumber, slotInput);
 
 
 
@@ -204,14 +208,9 @@ namespace GGXrdWakeupDPUtil
 
             var text = this.BlockReversalInputTextBox.Text;
 
+            SlotInput slotInput = new SlotInput(text);
 
-            if (this._reversalTool.CheckValidInput(text))
-            {
-
-            }
-
-
-            if (this._reversalTool.CheckValidInput(text))
+            if (slotInput.IsReversalValid)
             {
                 BlockReversalErrorTextBlock.Visibility = Visibility.Hidden;
                 BlockReversalEnableButton.IsEnabled = true;
