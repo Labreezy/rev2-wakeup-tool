@@ -133,12 +133,11 @@ namespace GGXrdWakeupDPUtil.UnitTests
         [TestCase("6,2        ,!3H", true)]
         [TestCase("6,2        ,3H", false)]
         [TestCase("6,2,3H", false)]
-        [TestCase("6,2,!3H", true)]
         [TestCase("6!,2,3H", false)]
         [TestCase("6,!2,3H", true)]
         [TestCase("!6,2,3H", true)]
         [TestCase("!6,2,!3H", false)]
-        public void IsReversalValid_Test(string input, bool isValid)
+        public void IsReversalValid_Test(string input, bool isReversalValid)
         {
             //Arrange
             SlotInput slotInput = new SlotInput(input);
@@ -148,24 +147,24 @@ namespace GGXrdWakeupDPUtil.UnitTests
 
             //Assert
 
-            Assert.AreEqual(isValid, result);
+            Assert.AreEqual(isReversalValid, result);
         }
 
-        [TestCase("6,2,!3H", false)]
-        [TestCase("6,2,!3h", false)]
+        [TestCase("6,2,!3H", true)]
+        [TestCase("6,2,!3h", true)]
         [TestCase("!6,2,!3H", false)]
         [TestCase("6,,!3H", false)]
-        [TestCase("6,2,!3PKSHD", false)]
+        [TestCase("6,2,!3PKSHD", true)]
         [TestCase("6,2,3H", true)]
         [TestCase("64,2,!3H", false)]
-        [TestCase("6 ,2,!3H", false)]
-        [TestCase("6,2        ,!3H", false)]
+        [TestCase("6 ,2,!3H", true)]
+        [TestCase("6,2        ,!3H", true)]
         [TestCase("6,2        ,3H", true)]
         [TestCase("6,2,3H", true)]
-        [TestCase("6,2,!3H", false)]
+        [TestCase("6,2,!3H", true)]
         [TestCase("6!,2,3H", false)]
-        [TestCase("6,!2,3H", false)]
-        [TestCase("!6,2,3H", false)]
+        [TestCase("6,!2,3H", true)]
+        [TestCase("!6,2,3H", true)]
         [TestCase("!6,2,!3H", false)]
         public void IsValid_Test(string input, bool isValid)
         {

@@ -59,7 +59,7 @@
                             <Button Margin="0,0,10,0" Content="Import" Command="{Binding WakeupTranslateFromFileCommand, Mode=OneWay}"/>
                             <Button Margin="10,0,0,0" Content="Export" Command="{Binding WakeupTranslateIntoFileCommand, Mode=OneWay}"/>
                         </UniformGrid>
-                        <TextBlock Grid.Row="4" Text="Invalid Input" Foreground="Red" Visibility="{Binding WakeupReversalErrorVisibility, Mode=OneWay}" />
+                        <TextBlock Grid.Row="4" Text="{Binding WakeupReversalErrorMessage}" Foreground="Red" Visibility="{Binding WakeupReversalErrorVisibility, Mode=OneWay}" />
                         <TextBlock Grid.Row="5" Text="{Binding WakeupReversalPercentage, ConverterParameter=Wakeup Reversal Percentage \{0\}%, Converter={StaticResource InterpolarConverter}}" HorizontalAlignment="Center"/>
                         <Slider Grid.Row="6" Value="{Binding WakeupReversalPercentage}" Maximum="100" Minimum="0" IsEnabled="{Binding IsWakeupReversalStarted, Converter={StaticResource AntiBooleanValueConverter}}" TickPlacement="BottomRight" LargeChange="20" SmallChange="1" />
                         <UniformGrid Grid.Row="7" Height="30" Columns="2" >
@@ -97,7 +97,7 @@
                             <Button Margin="0,0,10,0" Content="Import" Command="{Binding BlockstunTranslateFromFileCommand, Mode=OneWay}"/>
                             <Button Margin="10,0,0,0" Content="Export" Command="{Binding BlockstunTranslateIntoFileCommand, Mode=OneWay}"/>
                         </UniformGrid>
-                        <TextBlock Grid.Row="4" Text="Invalid Input" Foreground="Red" Visibility="{Binding BlockstunReversalErrorVisibility, Mode=OneWay}"/>
+                        <TextBlock Grid.Row="4" Text="{Binding BlockstunReversalErrorMessage}" Foreground="Red" Visibility="{Binding BlockstunReversalErrorVisibility, Mode=OneWay}"/>
                         <TextBlock Grid.Row="5" Text="{Binding BlockstunReversalDelay, ConverterParameter=Blockstun Reversal Delay \{0\}f, Converter={StaticResource InterpolarConverter}}"  Grid.ColumnSpan="2" HorizontalAlignment="Center"/>
                         <Slider Grid.Row="6" Grid.ColumnSpan="2" Value="{Binding BlockstunReversalDelay}" Maximum="100" Minimum="0" IsEnabled="{Binding IsBlockstunReversalStarted, Converter={StaticResource AntiBooleanValueConverter}}" TickPlacement="BottomRight" LargeChange="20" SmallChange="1" />
                         <TextBlock Grid.Row="7" Text="{Binding BlockstunReversalPercentage, ConverterParameter=Blockstun Reversal Percentage \{0\}%, Converter={StaticResource InterpolarConverter}}"  Grid.ColumnSpan="2" HorizontalAlignment="Center"/>

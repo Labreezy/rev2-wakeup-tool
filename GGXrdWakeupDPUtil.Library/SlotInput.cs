@@ -226,10 +226,15 @@ namespace GGXrdWakeupDPUtil.Library
 
             return inputList.All(x =>
                    {
-                       Regex regex = new Regex(@"^[1-9][PKSHDpksdh]*(?:,|$)");
+                       Regex regex = new Regex(@"^!{0,1}[1-9][PKSHDpksdh]*(?:,|$)");
 
                        return regex.IsMatch(x);
                    })
+                   && inputList.Where(x =>
+                   {
+                       Regex regex = new Regex(@"^!{1}[1-9][PKSHDpksdh]*(?:,|$)");
+                       return regex.IsMatch(x);
+                   }).Count() <=1
                 ;
         }
         private bool CheckReversalValidInput(string input)
