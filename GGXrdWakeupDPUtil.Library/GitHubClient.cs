@@ -28,10 +28,11 @@ namespace GGXrdWakeupDPUtil.Library
                     var ser = new DataContractJsonSerializer(typeof(GitHubRelease));
                     response = ser.ReadObject(new MemoryStream(Encoding.UTF8.GetBytes(stringResult))) as GitHubRelease;
                 }
+                
 
                 return new ReversalToolVersion()
                 {
-                    Version = response.Version,
+                    Version = new Version(response.Version),
                     Url = response.Url
                 };
             }

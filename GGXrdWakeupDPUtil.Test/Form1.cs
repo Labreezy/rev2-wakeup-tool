@@ -104,42 +104,42 @@ namespace GGXrdWakeupDPUtil.Test
 
         private void UpdateProcess(bool confirm = false)
         {
-            string currentVersion = ConfigurationManager.AppSettings.Get("CurrentVersion");
-
-            LogManager.Instance.WriteLine($"Current Version is {currentVersion}");
             try
             {
                 this._updateManager.CleanOldFiles();
                 var latestVersion = this._updateManager.CheckUpdates();
+                var currentVersion = new Version(ConfigurationManager.AppSettings.Get("CurrentVersion"));
+                LogManager.Instance.WriteLine($"Current Version is {currentVersion}");
 
-                if (latestVersion != null)
+
+                switch (Math.Sign(latestVersion.Version.CompareTo(currentVersion)))
                 {
-                    if (!confirm || MessageBox.Show("A new version is available\r\bDo you want do download it?", "New version available", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    {
-                        LogManager.Instance.WriteLine($"Found new version : v{latestVersion.Version}");
-                        bool downloadSuccess = this._updateManager.DownloadUpdate(latestVersion);
-
-                        if (downloadSuccess)
+                    case 0:
+                        LogManager.Instance.WriteLine("No updates");
+                        MessageBox.Show($"Your version is up to date.\r\nYour version : \t {currentVersion}");
+                        break;
+                    case -1:
+                        if (!confirm || MessageBox.Show($"A new version is available ({latestVersion.Version})\r\bDo you want do download it?", "New version available", MessageBoxButtons.YesNo) == DialogResult.Yes)
                         {
-                            bool installSuccess = this._updateManager.InstallUpdate();
+                            LogManager.Instance.WriteLine($"Found new version : v{latestVersion.Version}");
+                            bool downloadSuccess = this._updateManager.DownloadUpdate(latestVersion);
 
-                            if (installSuccess)
+                            if (downloadSuccess)
                             {
-                                this._updateManager.SaveVersion(latestVersion.Version);
-                                this._updateManager.RestartApplication();
+                                bool installSuccess = this._updateManager.InstallUpdate();
+
+                                if (installSuccess)
+                                {
+                                    this._updateManager.SaveVersion(latestVersion);
+                                    this._updateManager.RestartApplication();
+                                }
                             }
                         }
-                    }
-
-                }
-                else
-                {
-                    LogManager.Instance.WriteLine("No updates");
-
-                    if (confirm)
-                    {
-                        MessageBox.Show("Your version is up to date");
-                    }
+                        break;
+                    case 1:
+                        LogManager.Instance.WriteLine("No updates");
+                        MessageBox.Show($"You got a newer version.\r\nYour version : \t {currentVersion}\r\nAvailable version \t : {latestVersion.Version}");
+                        break;
                 }
             }
             catch (Exception ex)

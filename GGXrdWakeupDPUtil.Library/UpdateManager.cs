@@ -19,14 +19,8 @@ namespace GGXrdWakeupDPUtil.Library
             try
             {
                 ReversalToolVersion latestVersion = _gitHubClient.GetLatestVersion();
-                string currentVersion = ConfigurationManager.AppSettings.Get("CurrentVersion");
 
-                if (latestVersion.Version != currentVersion)
-                {
-                    return latestVersion;
-                }
-
-                return null;
+                return latestVersion;
             }
             catch (Exception)
             {
@@ -102,7 +96,7 @@ namespace GGXrdWakeupDPUtil.Library
             }
         }
 
-        public void SaveVersion(string version)
+        public void SaveVersion(ReversalToolVersion version)
         {
             Assembly executingAssembly = Assembly.GetEntryAssembly();
             var configFileName = $"{executingAssembly.Location}.config";
@@ -122,7 +116,7 @@ namespace GGXrdWakeupDPUtil.Library
                 }
 
                 versionNode.SetAttributeValue("key", "CurrentVersion");
-                versionNode.SetAttributeValue("value", version);
+                versionNode.SetAttributeValue("value", version.Version.ToString());
 
                 doc.Save(configFileName);
 
@@ -146,7 +140,7 @@ namespace GGXrdWakeupDPUtil.Library
 
     public class ReversalToolVersion
     {
-        public string Version { get; set; }
+        public Version Version { get; set; }
 
         public string Url { get; set; }
     }
