@@ -6,11 +6,9 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Xml.Linq;
 using GGXrdWakeupDPUtil.Library.Replay;
 using GGXrdWakeupDPUtil.Library.Replay.AsmInjection;
 using GGXrdWakeupDPUtil.Library.Replay.Keyboard;
@@ -57,6 +55,7 @@ namespace GGXrdWakeupDPUtil.Library
         #region Offsets
         private readonly IntPtr _p2IdOffset = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2IdOffset"), 16));
         private readonly IntPtr _recordingSlotPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("RecordingSlotPtr"), 16));
+        private readonly int _recordingSlotPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("RecordingSlotPtrOffset"), 16);
         private readonly IntPtr _p1AnimStringPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1AnimStringPtr"), 16));
         private readonly int _p1AnimStringPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1AnimStringPtrOffset"), 16);
         private readonly IntPtr _p2AnimStringPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2AnimStringPtr"), 16));
@@ -64,12 +63,15 @@ namespace GGXrdWakeupDPUtil.Library
         private readonly int _frameCountOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("FrameCountOffset"), 16);
         private readonly IntPtr _p1ComboCountPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1ComboCountPtr"), 16));
         private readonly int _p1ComboCountPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1ComboCountPtrOffset"), 16);
-        private readonly int _dummyIdOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("DummyIdOffset"), 16);
+        private readonly IntPtr _p2ComboCountPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2ComboCountPtr"), 16));
+        private readonly int _p2ComboCountPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2ComboCountPtrOffset"), 16);
+        private readonly IntPtr _dummyIdPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("DummyIdPtr"), 16));
+        private readonly int _dummyIdPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("DummyIdPtrOffset"), 16);
         private readonly int _replayKeyOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("ReplayKeyOffset"), 16);
 
         private readonly IntPtr _blockStunPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("BlockStunPtr"), 16));
-        private readonly int _blockStunOffset1 = Convert.ToInt32(ConfigurationManager.AppSettings.Get("BlockStunOffset1"), 16);
-        private readonly int _blockStunOffset2 = Convert.ToInt32(ConfigurationManager.AppSettings.Get("BlockStunOffset2"), 16);
+        private readonly int _blockStunOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("BlockStunPtrOffset"), 16);
+        
         #endregion
 
         private readonly string FaceDownAnimation = "CmnActFDown2Stand";
@@ -207,8 +209,7 @@ namespace GGXrdWakeupDPUtil.Library
 
         public NameWakeupData GetDummy()
         {
-            IntPtr address = IntPtr.Add(this._process.MainModule.BaseAddress, _dummyIdOffset);
-            var index = this._memoryReader.Read<int>(address);
+            var index = this._memoryReader.ReadWithOffsets<int>(_dummyIdPtr, _dummyIdPtrOffset);
 
             var result = _nameWakeupDataList[index];
 
@@ -218,15 +219,14 @@ namespace GGXrdWakeupDPUtil.Library
 
         public bool SetInputInSlot(int slotNumber, SlotInput slotInput)
         {
-            var baseAddress = this._memoryReader.ReadWithOffsets<IntPtr>(_recordingSlotPtr);
+            var baseAddress = this._memoryReader.GetAddressWithOffsets(_recordingSlotPtr, _recordingSlotPtrOffset);
             var slotAddress = IntPtr.Add(baseAddress, RecordingSlotSize * (slotNumber - 1));
-
 
             return this._memoryReader.Write(slotAddress, slotInput.Content);
         }
         public byte[] ReadInputInSlot(int slotNumber)
         {
-            var baseAddress = this._memoryReader.ReadWithOffsets<IntPtr>(_recordingSlotPtr);
+            var baseAddress = this._memoryReader.GetAddressWithOffsets(_recordingSlotPtr, _recordingSlotPtrOffset);
             var slotAddress = IntPtr.Add(baseAddress, RecordingSlotSize * (slotNumber - 1));
 
             var readBytes = this._memoryReader.ReadBytes(slotAddress, RecordingSlotSize);
@@ -387,7 +387,7 @@ namespace GGXrdWakeupDPUtil.Library
                             willReversal = rnd.Next(0, 101) <= wakeupReversalPercentage;
 
 
-                            Thread.Sleep(16); // ~1 frame
+                            Thread.Sleep(1); // ~1 frame
                             //Thread.Sleep(320); //20 frames, approximately, it's actually 333.333333333 ms.  Nobody should be able to be knocked down and get up in this time, causing the code to execute again.
                         }
                     }
@@ -670,6 +670,7 @@ namespace GGXrdWakeupDPUtil.Library
             if (player == 2)
             {
                 var length = 32;
+                
                 return this._memoryReader.ReadStringWithOffsets(_p2AnimStringPtr, length, _p2AnimStringPtrOffset);
             }
 
@@ -678,18 +679,12 @@ namespace GGXrdWakeupDPUtil.Library
 
         private int GetBlockstun(int player)
         {
-            var baseAddress = this._blockStunPtr;
-            var offset1 = this._blockStunOffset1;
-            var offset2 = this._blockStunOffset2;
-
             if (player == 2)
             {
-                offset1 += 4;
+                return this._memoryReader.ReadWithOffsets<int>(this._blockStunPtr, this._blockStunOffset);
             }
 
-            var result = this._memoryReader.ReadWithOffsets<int>(baseAddress, offset1, offset2);
-
-            return result;
+            throw new NotImplementedException();
         }
 
         private int FrameCount()
@@ -728,6 +723,10 @@ namespace GGXrdWakeupDPUtil.Library
                 return this._memoryReader.ReadWithOffsets<int>(_p1ComboCountPtr, _p1ComboCountPtrOffset);
             }
 
+            if (player == 2)
+            {
+                return this._memoryReader.ReadWithOffsets<int>(_p2ComboCountPtr, _p2ComboCountPtrOffset);
+            }
 
             throw new NotImplementedException();
         }
