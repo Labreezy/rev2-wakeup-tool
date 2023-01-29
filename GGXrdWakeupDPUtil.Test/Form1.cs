@@ -180,6 +180,11 @@ namespace GGXrdWakeupDPUtil.Test
             button12.Enabled = true;
         }
 
+        private void TechReversalButtonEnable()
+        {
+            
+        }
+
         private void RandomBurstButtonEnable()
         {
             button8.Enabled = false;
@@ -265,6 +270,20 @@ namespace GGXrdWakeupDPUtil.Test
                     : ReplayTriggerTypes.AsmInjection;
 
             this._reversalTool.ChangeReplayTrigger(replayTriggerType);
+        }
+
+        private void button18_Click(object sender, EventArgs e)
+        {
+            TechReversalButtonEnable();
+            SlotInput slotInput = new SlotInput(textBox1.Text);
+            _reversalTool.SetInputInSlot(1, slotInput);
+            this._reversalTool.StartTechReversalLoop(slotInput, this.trackBar2.Value, 0);
+        }
+
+        private void button17_Click(object sender, EventArgs e)
+        {
+            FunctionButtonsDisable();
+            this._reversalTool.StopTechReversalLoop();
         }
     }
 }

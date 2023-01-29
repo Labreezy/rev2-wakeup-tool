@@ -77,6 +77,7 @@ namespace GGXrdWakeupDPUtil.Library
         private readonly string FaceDownAnimation = "CmnActFDown2Stand";
         private readonly string FaceUpAnimation = "CmnActBDown2Stand";
         private readonly string WallSplatAnimation = "CmnActWallHaritsukiGetUp";
+        private readonly string TechAnimation = "CmnActUkemi";
 
         private const int RecordingSlotSize = 4808;
 
@@ -128,12 +129,22 @@ namespace GGXrdWakeupDPUtil.Library
         public event RandomBurstLoopErrorHandler RandomBurstlLoopErrorOccured;
         #endregion
 
-        #region Reversal Loop
+        #region Block Reversal Loop
         private static bool _runBlockReversalThread;
         private static readonly object RunBlockReversalThreadLock = new object();
         public delegate void BlockReversalLoopErrorHandler(Exception ex);
 
         public event BlockReversalLoopErrorHandler BlockReversalLoopErrorOccured;
+        #endregion
+
+        #region Tech Reversal loop
+
+        private static bool _runTechReversalThread;
+        private static readonly object RunTechReversalThreadLock = new object();
+
+        public delegate void TechReversalLoopErrorHandler(Exception ex);
+
+        public event TechReversalLoopErrorHandler TechReversalLoopErrorOccured;
         #endregion
 
 
@@ -587,6 +598,91 @@ namespace GGXrdWakeupDPUtil.Library
                 _runBlockReversalThread = false;
             }
         }
+        
+        public void StartTechReversalLoop(SlotInput slotInput, int percentage, int delay)
+        {
+            lock (RunTechReversalThreadLock)
+            {
+                _runTechReversalThread = true;
+            }
+
+            Thread techReversalThread = new Thread(() =>
+                {
+                    LogManager.Instance.WriteLine("Tech Reversal Thread start");
+
+                    bool localRunTechReversalThread = true;
+
+                    Random rnd = new Random();
+                    
+                    bool willReversal = rnd.Next(0, 101) <= percentage;
+
+                    var oldAnimation = this.ReadAnimationString(2);
+
+                    while (localRunTechReversalThread && !this._process.HasExited)
+                    {
+
+
+                        try
+                        {
+                            var animation = this.ReadAnimationString(2);
+
+                            if (animation == TechAnimation && oldAnimation != animation)
+                            {
+                                if (willReversal)
+                                {
+                                    this.Wait(6); // tech recovery
+                                    this.Wait(Math.Max(0, slotInput.ReversalFrameIndex));
+                                    this.Wait(delay);
+
+                                    this.PlayReversal();
+                                }
+
+                                willReversal = rnd.Next(0, 101) <= percentage;
+
+                                Thread.Sleep(32);
+                            }
+
+                            oldAnimation = animation;
+                            
+                            Thread.Sleep(10); //check about twice by frame
+                        }
+                        catch (Exception ex)
+                        {
+                            LogManager.Instance.WriteException(ex);
+                            StopTechReversalLoop();
+                            TechReversalLoopErrorOccured?.Invoke(ex);
+                            return;
+                        }
+
+
+
+
+                        lock (RunTechReversalThreadLock)
+                        {
+                            localRunTechReversalThread = _runTechReversalThread;
+                        }
+                        
+                        Thread.Sleep(1);
+                    }
+                    
+                    
+                    
+                    LogManager.Instance.WriteLine("Block Reversal Thread ended");
+                })
+                { Name = "techReversalThread" };
+            
+            techReversalThread.Start();
+            
+            this.BringWindowToFront();
+        }
+        
+        public void StopTechReversalLoop()
+        {
+            lock (RunTechReversalThreadLock)
+            {
+                _runTechReversalThread = false;
+            }
+        }
 
 
         #region Private
@@ -837,6 +933,6 @@ namespace GGXrdWakeupDPUtil.Library
         #endregion
 
 
-
+        
     }
 }
