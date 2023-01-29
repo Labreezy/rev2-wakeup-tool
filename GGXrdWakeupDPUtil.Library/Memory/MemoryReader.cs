@@ -103,6 +103,8 @@ namespace GGXrdWakeupDPUtil.Library.Memory
             return result;
         }
 
+        
+
         public T ReadWithOffsets<T>(IntPtr baseAddress, params int[] offsets)
         {
             IntPtr newAddress = IntPtr.Add(this._process.MainModule.BaseAddress, (int)baseAddress);
@@ -173,6 +175,15 @@ namespace GGXrdWakeupDPUtil.Library.Memory
             }
 
             return result;
+        }
+        
+        
+        
+        public T Read<T>(MemoryPointer memoryPointer)
+        {
+            return memoryPointer.Offsets.Any() ? 
+                this.ReadWithOffsets<T>(memoryPointer.Pointer, memoryPointer.Offsets.ToArray()) :
+                this.Read<T>(memoryPointer.Pointer);
         }
     }
 }

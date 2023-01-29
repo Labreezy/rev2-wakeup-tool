@@ -65,8 +65,8 @@ namespace GGXrdWakeupDPUtil.Library
         private readonly int _p1ComboCountPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1ComboCountPtrOffset"), 16);
         private readonly IntPtr _p2ComboCountPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2ComboCountPtr"), 16));
         private readonly int _p2ComboCountPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2ComboCountPtrOffset"), 16);
-        private readonly IntPtr _dummyIdPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("DummyIdPtr"), 16));
-        private readonly int _dummyIdPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("DummyIdPtrOffset"), 16);
+        private readonly MemoryPointer _dummyIdPtr = new MemoryPointer("DummyIdPtr");
+        private readonly MemoryPointer _replayKeyOffset = new MemoryPointer("ReplayKeyOffset");
         private readonly int _replayKeyOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("ReplayKeyOffset"), 16);
 
         private readonly IntPtr _blockStunPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("BlockStunPtr"), 16));
@@ -209,8 +209,7 @@ namespace GGXrdWakeupDPUtil.Library
 
         public NameWakeupData GetDummy()
         {
-            var index = this._memoryReader.ReadWithOffsets<int>(_dummyIdPtr, _dummyIdPtrOffset);
-
+            var index = _memoryReader.Read<int>(_dummyIdPtr);
             var result = _nameWakeupDataList[index];
 
             return result;
