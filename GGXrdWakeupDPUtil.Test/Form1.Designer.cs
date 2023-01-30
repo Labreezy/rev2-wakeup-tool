@@ -23,8 +23,8 @@
         #region Code généré par le Concepteur Windows Form
 
         /// <summary>
-        /// Méthode requise pour la prise en charge du concepteur - ne modifiez pas
-        /// le contenu de cette méthode avec l'éditeur de code.
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
         {
@@ -57,12 +57,16 @@
             this.button14 = new System.Windows.Forms.Button();
             this.button15 = new System.Windows.Forms.Button();
             this.button16 = new System.Windows.Forms.Button();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.button17 = new System.Windows.Forms.Button();
+            this.button18 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).BeginInit();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
@@ -234,36 +238,20 @@
             // numericUpDown2
             // 
             this.numericUpDown2.Location = new System.Drawing.Point(164, 47);
-            this.numericUpDown2.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+            this.numericUpDown2.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             this.numericUpDown2.Name = "numericUpDown2";
             this.numericUpDown2.Size = new System.Drawing.Size(120, 20);
             this.numericUpDown2.TabIndex = 10;
-            this.numericUpDown2.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+            this.numericUpDown2.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
             // numericUpDown1
             // 
             this.numericUpDown1.Location = new System.Drawing.Point(13, 47);
-            this.numericUpDown1.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+            this.numericUpDown1.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             this.numericUpDown1.Name = "numericUpDown1";
             this.numericUpDown1.Size = new System.Drawing.Size(120, 20);
             this.numericUpDown1.TabIndex = 9;
-            this.numericUpDown1.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
+            this.numericUpDown1.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
             // button10
             // 
@@ -375,11 +363,43 @@
             this.button16.UseVisualStyleBackColor = true;
             this.button16.Click += new System.EventHandler(this.button16_Click);
             // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.button17);
+            this.groupBox3.Controls.Add(this.button18);
+            this.groupBox3.Location = new System.Drawing.Point(492, 457);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(428, 111);
+            this.groupBox3.TabIndex = 22;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Tech Reversal";
+            // 
+            // button17
+            // 
+            this.button17.Location = new System.Drawing.Point(194, 20);
+            this.button17.Name = "button17";
+            this.button17.Size = new System.Drawing.Size(179, 43);
+            this.button17.TabIndex = 1;
+            this.button17.Text = "Stop Tech Reversal";
+            this.button17.UseVisualStyleBackColor = true;
+            this.button17.Click += new System.EventHandler(this.button17_Click);
+            // 
+            // button18
+            // 
+            this.button18.Location = new System.Drawing.Point(7, 20);
+            this.button18.Name = "button18";
+            this.button18.Size = new System.Drawing.Size(151, 43);
+            this.button18.TabIndex = 0;
+            this.button18.Text = "Tech Reversal";
+            this.button18.UseVisualStyleBackColor = true;
+            this.button18.Click += new System.EventHandler(this.button18_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(984, 509);
+            this.ClientSize = new System.Drawing.Size(984, 734);
+            this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.button16);
             this.Controls.Add(this.button15);
             this.Controls.Add(this.button14);
@@ -409,10 +429,14 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.groupBox2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).EndInit();
+            this.groupBox3.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
+
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.Button button17;
+        private System.Windows.Forms.Button button18;
 
         #endregion
 

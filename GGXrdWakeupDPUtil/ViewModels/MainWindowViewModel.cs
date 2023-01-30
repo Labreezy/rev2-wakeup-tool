@@ -910,13 +910,8 @@ namespace GGXrdWakeupDPUtil.ViewModels
 
         #region ReplayTrigger
 
-        //TODO fix asm injection
-        // public bool IsAsmReplayTypeChecked => ConfigurationManager.AppSettings.Get("ReplayTriggerType") == ReplayTriggerTypes.AsmInjection.ToString();
-        // public bool IsKeyStrokeReplayTypeChecked => ConfigurationManager.AppSettings.Get("ReplayTriggerType") == ReplayTriggerTypes.Keystroke.ToString();
-
-
-        public bool IsAsmReplayTypeChecked => false;
-        public bool IsKeyStrokeReplayTypeChecked => true;
+        public bool IsAsmReplayTypeChecked => ConfigurationManager.AppSettings.Get("ReplayTriggerType") == ReplayTriggerTypes.AsmInjection.ToString();
+        public bool IsKeyStrokeReplayTypeChecked => ConfigurationManager.AppSettings.Get("ReplayTriggerType") == ReplayTriggerTypes.Keystroke.ToString();
 
 
 

@@ -7,6 +7,7 @@ using System.Text;
 
 namespace GGXrdWakeupDPUtil.Library.Memory
 {
+    [Obsolete]
     public class MemoryReader
     {
         private readonly Process _process;
@@ -57,15 +58,20 @@ namespace GGXrdWakeupDPUtil.Library.Memory
         }
 
         //TODO add method for multiple offsets
-        public IntPtr GetAddressWithOffsets(IntPtr address, int offset)
+        public IntPtr GetAddressWithOffsets(IntPtr address, params int[] offsets)
         {
-            IntPtr newAddress = IntPtr.Add(this._process.MainModule.BaseAddress, (int)address);
             
-            IntPtr value = this.Read<IntPtr>(newAddress);
+            IntPtr newAddress = IntPtr.Add(this._process.MainModule.BaseAddress, (int)address);
 
-            newAddress = IntPtr.Add(value, offset);
+            foreach (var offset in offsets)
+            {
+                IntPtr value = this.Read<IntPtr>(newAddress);
+                
+                newAddress = IntPtr.Add(value, offset);
+            }
 
             return newAddress;
+            
         }
 
         public byte[] ReadBytes(IntPtr address, int length)
@@ -102,6 +108,8 @@ namespace GGXrdWakeupDPUtil.Library.Memory
 
             return result;
         }
+
+        
 
         public T ReadWithOffsets<T>(IntPtr baseAddress, params int[] offsets)
         {
@@ -173,6 +181,22 @@ namespace GGXrdWakeupDPUtil.Library.Memory
             }
 
             return result;
+        }
+        
+        
+        
+        public T Read<T>(MemoryPointer memoryPointer)
+        {
+            return memoryPointer.Offsets.Any() ? 
+                this.ReadWithOffsets<T>(memoryPointer.Pointer, memoryPointer.Offsets.ToArray()) :
+                this.Read<T>(memoryPointer.Pointer);
+        }
+
+        public string ReadString(MemoryPointer memoryPointer, int length)
+        {
+            return memoryPointer.Offsets.Any()
+                ? this.ReadStringWithOffsets(memoryPointer.Pointer, length, memoryPointer.Offsets.ToArray())
+                : this.ReadString(memoryPointer.Pointer, length);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace GGXrdWakeupDPUtil
         {
             _reversalTool.DummyChanged += _reversalTool_DummyChanged;
             _reversalTool.ReversalLoopErrorOccured += _reversalTool_ReversalLoopErrorOccured;
-            _reversalTool.RandomBurstlLoopErrorOccured += _reversalTool_RandomBurstlLoopErrorOccured;
+            _reversalTool.RandomBurstLoopErrorOccured += ReversalToolRandomBurstLoopErrorOccured;
             LogManager.Instance.LineReceived += LogManager_LineReceived;
 
 
@@ -347,7 +347,7 @@ namespace GGXrdWakeupDPUtil
             }
         }
 
-        private void _reversalTool_RandomBurstlLoopErrorOccured(Exception ex)
+        private void ReversalToolRandomBurstLoopErrorOccured(Exception ex)
         {
             StopBurst();
         }
