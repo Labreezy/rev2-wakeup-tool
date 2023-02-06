@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:GGXrdReversalTool.ViewModels"
         xmlns:local="clr-namespace:GGXrdReversalTool"
-        xmlns:controls="clr-namespace:GGXrdReversalTool.Controls"
         xmlns:scenarioEventImplementations="clr-namespace:GGXrdReversalTool.Library.Scenarios.Event.Implementations;assembly=GGXrdReversalTool.Library"
+        xmlns:scenarioActionImplementations="clr-namespace:GGXrdReversalTool.Library.Scenarios.Action.Implementations;assembly=GGXrdReversalTool.Library"
+        xmlns:scenarioFrequencyImplementations="clr-namespace:GGXrdReversalTool.Library.Scenarios.Frequency.Implementations;assembly=GGXrdReversalTool.Library"
         xmlns:slotsControl="clr-namespace:GGXrdReversalTool.Controls.SlotsControl"
         xmlns:converters="clr-namespace:GGXrdReversalTool.Converters"
         mc:Ignorable="d"
@@ -17,6 +18,8 @@
     
     <Window.Resources>
         <converters:ComboEventConverter x:Key="ComboEventConverter"/>
+        <converters:AnimationEventConverter x:Key="AnimationEventConverter"/>
+        <converters:PercentageFrequencyConverter x:Key="PercentageFrequencyConverter"/>
     </Window.Resources>
     <Window.DataContext>
         <viewModels:ScenarioWindowViewModel/>
@@ -56,10 +59,10 @@
                             <GroupBox Grid.Column="0" Grid.Row="0" Header="When">
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition />
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition/>
                                     </Grid.RowDefinitions>
-                                    <ComboBox ItemsSource="{Binding ScenarioEvents}" SelectedValue="{Binding SelectedScenarioEvent}" VerticalAlignment="Center">
+                                    <ComboBox ItemsSource="{Binding ScenarioEvents}" SelectedValue="{Binding SelectedScenarioEvent}" VerticalAlignment="Center" Margin="0,5,0,5">
                                         <ComboBox.Resources>
                                             <DataTemplate DataType="{x:Type scenarioEventImplementations:ComboEvent}">
                                                 <TextBlock>Combo</TextBlock>
@@ -70,55 +73,90 @@
                                         </ComboBox.Resources>
                                     </ComboBox>
 
-                                    <GroupBox Grid.Row="1">
-                                        <ContentControl Content="{Binding SelectedScenarioEvent}">
-                                            <ContentControl.Resources>
-                                                <DataTemplate DataType="{x:Type scenarioEventImplementations:ComboEvent}">
-                                                    <Grid>
-                                                        <Grid.RowDefinitions>
-                                                            <RowDefinition/>
-                                                            <RowDefinition/>
-                                                            <RowDefinition/>
-                                                        </Grid.RowDefinitions>
-                                                        <TextBlock>
-                                                            <TextBlock.Text>
-                                                                <MultiBinding Converter="{StaticResource ComboEventConverter}">
-                                                                    <Binding Path="MinComboCount"/>
-                                                                    <Binding Path="MaxComboCount"/>
-                                                                </MultiBinding>
-                                                            </TextBlock.Text>
-                                                        </TextBlock>
-                                                        <Slider Grid.Row="1" Value="{Binding MinComboCount}" Minimum="1" Maximum="{Binding MaxComboCount}"/>
-                                                        <Slider Grid.Row="2" Value="{Binding MaxComboCount}" Minimum="{Binding MinComboCount}" Maximum="99"/>
-                                                    </Grid>
-                                                </DataTemplate>
-                                                <DataTemplate DataType="{x:Type scenarioEventImplementations:AnimationEvent}">
-                                                    <TextBlock>Dummy wakes up</TextBlock>
-                                                </DataTemplate>
-                                            </ContentControl.Resources>
-                                        </ContentControl>
-                                    </GroupBox>
+                                    <ContentControl Grid.Row="1" Content="{Binding SelectedScenarioEvent}">
+                                        <ContentControl.Resources>
+                                            <DataTemplate DataType="{x:Type scenarioEventImplementations:ComboEvent}">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition/>
+                                                        <RowDefinition/>
+                                                        <RowDefinition/>
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock TextWrapping="Wrap">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding Converter="{StaticResource ComboEventConverter}">
+                                                                <Binding Path="MinComboCount"/>
+                                                                <Binding Path="MaxComboCount"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                    <Slider Grid.Row="1" Value="{Binding MinComboCount}" Minimum="1" Maximum="{Binding MaxComboCount}"/>
+                                                    <Slider Grid.Row="2" Value="{Binding MaxComboCount}" Minimum="{Binding MinComboCount}" Maximum="99"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                            <DataTemplate DataType="{x:Type scenarioEventImplementations:AnimationEvent}">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition/>
+                                                        <RowDefinition/>
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock TextWrapping="Wrap">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding Converter="{StaticResource AnimationEventConverter}">
+                                                                <Binding Path="ShouldCheckWakingUp"/>
+                                                                <Binding Path="ShouldCheckWallSplat"/>
+                                                                <Binding Path="ShouldCheckAirTech"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                    <WrapPanel Grid.Row="1">
+                                                        <WrapPanel.Resources>
+                                                            <Style TargetType="{x:Type CheckBox}">
+                                                                <Setter Property="Margin" Value="5,5,5,5"/>
+                                                            </Style>
+                                                        </WrapPanel.Resources>
+                                                        <CheckBox Content="Waking up" IsChecked="{Binding ShouldCheckWakingUp}"/>
+                                                        <CheckBox Content="Wallsplat recovering" IsChecked="{Binding ShouldCheckWallSplat}"/>
+                                                        <CheckBox Content="Air Teching" IsChecked="{Binding ShouldCheckAirTech}"/>
+                                                    </WrapPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ContentControl.Resources>
+                                    </ContentControl>
                                 </Grid>
                                 
                             </GroupBox>
                             <GroupBox Grid.Column="1" Grid.Row="0" Header="Do">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition/>
-                                        <RowDefinition/>
-                                    </Grid.RowDefinitions>
-                                    <ComboBox ItemsSource="{Binding ScenarioActions}" SelectedValue="{Binding SelectedScenarioAction}"/>
-                                    <ContentControl Grid.Row="1" Content="{Binding SelectedScenarioAction}"/>
-                                </Grid>
+                                <ContentControl Content="{Binding SelectedScenarioAction}">
+                                    <ContentControl.Resources>
+                                        <DataTemplate DataType="{x:Type scenarioActionImplementations:PlayReversalAction}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock TextWrapping="Wrap" Text="Action to perform :"/>
+                                                <TextBox Grid.Row="1" Height="60" Text="{Binding Input.InputText}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ContentControl.Resources>
+                                </ContentControl>
                             </GroupBox>
                             <GroupBox Grid.Column="2" Grid.Row="0" Header="How often?">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition/>
-                                        <RowDefinition/>
-                                    </Grid.RowDefinitions>
-                                    <ComboBox ItemsSource="{Binding ScenarioFrequencies}" SelectedValue="{Binding SelectedScenarioFrequency}"/>
-                                </Grid>
+                                <ContentControl Content="{Binding SelectedScenarioFrequency}">
+                                    <ContentControl.Resources>
+                                        <DataTemplate DataType="{x:Type scenarioFrequencyImplementations:PercentageFrequency}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock TextWrapping="Wrap" Text="{Binding Percentage, Converter={StaticResource PercentageFrequencyConverter}}"/>
+                                                <Slider Grid.Row="1" Value="{Binding Percentage}" Minimum="0" Maximum="100" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ContentControl.Resources>
+                                </ContentControl>
                             </GroupBox>
                             <UniformGrid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Height="30" Columns="2" Margin="0,5,0,0">
                                 <Button Margin="0,0,10,0" Content="Enable" Command="{Binding EnableCommand}" />

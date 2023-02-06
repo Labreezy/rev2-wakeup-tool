@@ -40,16 +40,9 @@ public class ScenarioWindowViewModel : ViewModelBase
             new AnimationEvent()
         });
 
-        _scenarioActions = new ObservableCollection<IScenarioAction>( new IScenarioAction[]
-        {
-            new PlayReversalAction() { Input = new SlotInput("5HD")},
-            new PlayReversalAction() { Input = new SlotInput("6,2,!3H")}
-        });
 
-        _scenarioFrequencies = new ObservableCollection<IScenarioFrequency>(new IScenarioFrequency[]
-        {
-            new PercentageFrequency(100)
-        });
+        _selectedScenarioAction = new PlayReversalAction() { Input = new SlotInput("6,2,!3H") };
+        _selectedScenarioFrequency = new PercentageFrequency();
 
     }
 
@@ -153,18 +146,6 @@ public class ScenarioWindowViewModel : ViewModelBase
         }
     }
 
-    
-    private ObservableCollection<IScenarioAction> _scenarioActions;
-    public ObservableCollection<IScenarioAction> ScenarioActions
-    {
-        get => _scenarioActions;
-        set
-        {
-            if (Equals(value, _scenarioActions)) return;
-            _scenarioActions = value;
-            OnPropertyChanged();
-        }
-    }
 
     private IScenarioAction? _selectedScenarioAction;
     public IScenarioAction? SelectedScenarioAction
@@ -174,18 +155,6 @@ public class ScenarioWindowViewModel : ViewModelBase
         {
             if (Equals(value, _selectedScenarioAction)) return;
             _selectedScenarioAction = value;
-            OnPropertyChanged();
-        }
-    }
-
-    private ObservableCollection<IScenarioFrequency> _scenarioFrequencies;
-    public ObservableCollection<IScenarioFrequency> ScenarioFrequencies
-    {
-        get => _scenarioFrequencies;
-        set
-        {
-            if (Equals(value, _scenarioFrequencies)) return;
-            _scenarioFrequencies = value;
             OnPropertyChanged();
         }
     }

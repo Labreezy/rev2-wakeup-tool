@@ -13,7 +13,7 @@ public class SlotInput
         }
         public SlotInput(string input)
         {
-            this.ProcessBuild(input);
+            InputText = input;
         }
         public SlotInput(IList<byte> result)
         {
@@ -32,9 +32,21 @@ public class SlotInput
                 .Select(x => SingleInputParse(x, isP2))
                 .Aggregate((a, b) => $"{a},{b}");
 
-            this.ProcessBuild(input);
+            InputText = input;
         }
 
+
+        private string _inputText;
+
+        public string InputText
+        {
+            get => _inputText;
+            set
+            {
+                _inputText = value;
+                ProcessBuild(_inputText);
+            }
+        }
 
         const char FrameDelimiter = ',';
         const char WakeUpFrameDelimiter = '!';

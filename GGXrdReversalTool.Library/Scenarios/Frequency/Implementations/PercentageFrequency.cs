@@ -5,12 +5,14 @@ namespace GGXrdReversalTool.Library.Scenarios.Frequency.Implementations;
 public class PercentageFrequency : IScenarioFrequency
 {
     private readonly Random _random = new();
-    private readonly int _percentage;
+    private int _percentage = 100;
 
-    public PercentageFrequency(int percentage)
+    public int Percentage
     {
-        _percentage = Math.Max(Math.Min(percentage, 100), 0);
+        get => _percentage;
+        set => _percentage = Math.Max(Math.Min(value, 100), 0);
     }
+
 
     public bool ShouldHappen()
     {

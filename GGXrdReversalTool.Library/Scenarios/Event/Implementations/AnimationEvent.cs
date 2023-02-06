@@ -11,6 +11,10 @@ public class AnimationEvent : IScenarioEvent
 
     public IMemoryReader MemoryReader { get; set; }
 
+    public bool ShouldCheckWakingUp { get; set; } = true;
+    public bool ShouldCheckWallSplat { get; set; } = true;
+    public bool ShouldCheckAirTech { get; set; } = false;
+
 
     private string _oldAnimation = "";
     public ScenarioEventTypes CheckEvent()
@@ -23,28 +27,24 @@ public class AnimationEvent : IScenarioEvent
                            _oldAnimation != animationString;
 
         _oldAnimation = animationString;
-        // if (shouldInvoke)
-        // {
-        //     Occured?.Invoke(ScenarioEventTypes.KDFaceDown);
-        // }
 
 
-        if (animationString is FaceDownAnimation)
+        if (animationString is FaceDownAnimation && ShouldCheckWakingUp)
         {
             return ScenarioEventTypes.KDFaceDown;
         }
 
-        if (animationString is FaceUpAnimation)
+        if (animationString is FaceUpAnimation && ShouldCheckWakingUp)
         {
             return ScenarioEventTypes.KDFaceUp;
         }
 
-        if (animationString is WallSplatAnimation)
+        if (animationString is WallSplatAnimation && ShouldCheckWallSplat)
         {
             return ScenarioEventTypes.WallSplat;
         }
 
-        if (animationString is TechAnimation)
+        if (animationString is TechAnimation && ShouldCheckAirTech)
         {
             return ScenarioEventTypes.Tech;
         }

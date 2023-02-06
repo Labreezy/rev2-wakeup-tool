@@ -4,7 +4,6 @@ using System.Windows.Data;
 
 namespace GGXrdReversalTool.Converters;
 
-[ValueConversion(typeof(int), typeof(string))]
 public class ComboEventConverter : IMultiValueConverter 
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
