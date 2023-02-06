@@ -8,12 +8,16 @@
         xmlns:controls="clr-namespace:GGXrdReversalTool.Controls"
         xmlns:scenarioEventImplementations="clr-namespace:GGXrdReversalTool.Library.Scenarios.Event.Implementations;assembly=GGXrdReversalTool.Library"
         xmlns:slotsControl="clr-namespace:GGXrdReversalTool.Controls.SlotsControl"
-        xmlns:numericUpDown="clr-namespace:GGXrdReversalTool.Controls.NumericUpDownControl"
+        xmlns:converters="clr-namespace:GGXrdReversalTool.Converters"
         mc:Ignorable="d"
         Title="{Binding Title}"
         Height="450" Width="800"
         Loaded="MainWindow_OnLoaded"
         Closed="MainWindow_OnClosed">
+    
+    <Window.Resources>
+        <converters:ComboEventConverter x:Key="ComboEventConverter"/>
+    </Window.Resources>
     <Window.DataContext>
         <viewModels:ScenarioWindowViewModel/>
     </Window.DataContext>
@@ -55,7 +59,7 @@
                                         <RowDefinition />
                                         <RowDefinition/>
                                     </Grid.RowDefinitions>
-                                    <ComboBox ItemsSource="{Binding ScenarioEvents}" SelectedValue="{Binding SelectedScenarioEvent}" Height="Auto">
+                                    <ComboBox ItemsSource="{Binding ScenarioEvents}" SelectedValue="{Binding SelectedScenarioEvent}" VerticalAlignment="Center">
                                         <ComboBox.Resources>
                                             <DataTemplate DataType="{x:Type scenarioEventImplementations:ComboEvent}">
                                                 <TextBlock>Combo</TextBlock>
@@ -74,13 +78,18 @@
                                                         <Grid.RowDefinitions>
                                                             <RowDefinition/>
                                                             <RowDefinition/>
+                                                            <RowDefinition/>
                                                         </Grid.RowDefinitions>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock>Dummy gets hit by </TextBlock>
-                                                            <TextBlock Text="{Binding ComboCount}"></TextBlock>
-                                                            <TextBlock> hit combo</TextBlock>
-                                                        </StackPanel>
-                                                        <Slider Grid.Row="1" Value="{Binding ComboCount}" Minimum="1" Maximum="99"/>
+                                                        <TextBlock>
+                                                            <TextBlock.Text>
+                                                                <MultiBinding Converter="{StaticResource ComboEventConverter}">
+                                                                    <Binding Path="MinComboCount"/>
+                                                                    <Binding Path="MaxComboCount"/>
+                                                                </MultiBinding>
+                                                            </TextBlock.Text>
+                                                        </TextBlock>
+                                                        <Slider Grid.Row="1" Value="{Binding MinComboCount}" Minimum="1" Maximum="{Binding MaxComboCount}"/>
+                                                        <Slider Grid.Row="2" Value="{Binding MaxComboCount}" Minimum="{Binding MinComboCount}" Maximum="99"/>
                                                     </Grid>
                                                 </DataTemplate>
                                                 <DataTemplate DataType="{x:Type scenarioEventImplementations:AnimationEvent}">
