@@ -1,5 +1,6 @@
 ﻿using GGXrdReversalTool.Library.Memory;
 using GGXrdReversalTool.Library.Models;
+using GGXrdReversalTool.Library.Models.Inputs;
 using GGXrdReversalTool.Library.Scenarios.Action;
 using GGXrdReversalTool.Library.Scenarios.Event;
 using GGXrdReversalTool.Library.Scenarios.Frequency;

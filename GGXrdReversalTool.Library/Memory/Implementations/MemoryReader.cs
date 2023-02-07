@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using GGXrdReversalTool.Library.Memory.Pointer;
 using GGXrdReversalTool.Library.Models;
+using GGXrdReversalTool.Library.Models.Inputs;
 
 namespace GGXrdReversalTool.Library.Memory.Implementations;
 

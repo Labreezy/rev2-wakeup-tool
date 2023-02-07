@@ -1,6 +1,7 @@
 ﻿using GGXrdReversalTool.Library.Input;
 using GGXrdReversalTool.Library.Memory;
 using GGXrdReversalTool.Library.Models;
+using GGXrdReversalTool.Library.Models.Inputs;
 
 namespace GGXrdReversalTool.Library.Scenarios.Action.Implementations;
 

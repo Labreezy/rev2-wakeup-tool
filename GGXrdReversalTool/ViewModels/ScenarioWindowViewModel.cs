@@ -7,6 +7,7 @@ using GGXrdReversalTool.Library.Configuration;
 using GGXrdReversalTool.Library.Memory;
 using GGXrdReversalTool.Library.Memory.Implementations;
 using GGXrdReversalTool.Library.Models;
+using GGXrdReversalTool.Library.Models.Inputs;
 using GGXrdReversalTool.Library.Scenarios;
 using GGXrdReversalTool.Library.Scenarios.Action;
 using GGXrdReversalTool.Library.Scenarios.Action.Implementations;
@@ -189,6 +190,7 @@ public class ScenarioWindowViewModel : ViewModelBase
         return _selectedScenarioEvent != null &&
                _selectedScenarioAction != null &&
                _selectedScenarioFrequency != null &&
+               ((_selectedScenarioEvent is AnimationEvent && _selectedScenarioAction.Input.IsReversalValid) || (_selectedScenarioEvent is ComboEvent && _selectedScenarioAction.Input.IsValid)) &&
                _scenario is not { IsRunning: true };
     }
 

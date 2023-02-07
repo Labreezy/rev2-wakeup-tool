@@ -18,4 +18,39 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Images\Inputs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Images\Inputs\22px-GGXRD_P_Prompt.png" />
+      <Resource Include="Images\Inputs\22px-GGXRD_P_Prompt.png" />
+      <None Remove="Images\Inputs\22px-GGXRD_D_Prompt.png" />
+      <Resource Include="Images\Inputs\22px-GGXRD_D_Prompt.png" />
+      <None Remove="Images\Inputs\22px-GGXRD_H_Prompt.png" />
+      <Resource Include="Images\Inputs\22px-GGXRD_H_Prompt.png" />
+      <None Remove="Images\Inputs\22px-GGXRD_K_Prompt.png" />
+      <Resource Include="Images\Inputs\22px-GGXRD_K_Prompt.png" />
+      <None Remove="Images\Inputs\22px-GGXRD_S_Prompt.png" />
+      <Resource Include="Images\Inputs\22px-GGXRD_S_Prompt.png" />
+      <None Remove="Images\Inputs\24px-InputIcon_1.png" />
+      <Resource Include="Images\Inputs\24px-InputIcon_1.png" />
+      <None Remove="Images\Inputs\24px-InputIcon_2.png" />
+      <Resource Include="Images\Inputs\24px-InputIcon_2.png" />
+      <None Remove="Images\Inputs\24px-InputIcon_3.png" />
+      <Resource Include="Images\Inputs\24px-InputIcon_3.png" />
+      <None Remove="Images\Inputs\24px-InputIcon_4.png" />
+      <Resource Include="Images\Inputs\24px-InputIcon_4.png" />
+      <None Remove="Images\Inputs\24px-InputIcon_5.png" />
+      <Resource Include="Images\Inputs\24px-InputIcon_5.png" />
+      <None Remove="Images\Inputs\24px-InputIcon_6.png" />
+      <Resource Include="Images\Inputs\24px-InputIcon_6.png" />
+      <None Remove="Images\Inputs\24px-InputIcon_7.png" />
+      <Resource Include="Images\Inputs\24px-InputIcon_7.png" />
+      <None Remove="Images\Inputs\24px-InputIcon_8.png" />
+      <Resource Include="Images\Inputs\24px-InputIcon_8.png" />
+      <None Remove="Images\Inputs\24px-InputIcon_9.png" />
+      <Resource Include="Images\Inputs\24px-InputIcon_9.png" />
+    </ItemGroup>
+
 </Project>
