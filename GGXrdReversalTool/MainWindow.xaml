@@ -8,6 +8,7 @@
         xmlns:scenarioEventImplementations="clr-namespace:GGXrdReversalTool.Library.Scenarios.Event.Implementations;assembly=GGXrdReversalTool.Library"
         xmlns:scenarioActionImplementations="clr-namespace:GGXrdReversalTool.Library.Scenarios.Action.Implementations;assembly=GGXrdReversalTool.Library"
         xmlns:scenarioFrequencyImplementations="clr-namespace:GGXrdReversalTool.Library.Scenarios.Frequency.Implementations;assembly=GGXrdReversalTool.Library"
+        xmlns:presets="clr-namespace:GGXrdReversalTool.Library.Presets;assembly=GGXrdReversalTool.Library"
         xmlns:slotsControl="clr-namespace:GGXrdReversalTool.Controls.SlotsControl"
         xmlns:converters="clr-namespace:GGXrdReversalTool.Converters"
         mc:Ignorable="d"
@@ -24,7 +25,7 @@
         <converters:InputSplitConverter x:Key="InputSplitConverter"/>
     </Window.Resources>
     <Window.DataContext>
-        <viewModels:ScenarioWindowViewModel/>
+        <viewModels:ScenarioWindowViewModel x:Name="viewModel"/>
     </Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
@@ -129,192 +130,326 @@
                                 
                             </GroupBox>
                             <GroupBox Grid.Column="1" Grid.Row="0" Header="Do">
-                                <ContentControl Content="{Binding SelectedScenarioAction}">
-                                    <ContentControl.Resources>
-                                        <DataTemplate DataType="{x:Type scenarioActionImplementations:PlayReversalAction}">
-                                            <ItemsControl>
-                                                <ItemsControl.ItemContainerStyle>
-                                                    <Style>
-                                                        <Setter Property="Control.Margin" Value="0,5,0,5"/>
-                                                    </Style>
-                                                </ItemsControl.ItemContainerStyle>
-                                                <ItemsControl.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <Grid>
-                                                            <Grid.RowDefinitions>
-                                                                <RowDefinition Height="Auto"/>
-                                                                <RowDefinition Height="Auto"/>
-                                                                <RowDefinition/>
-                                                            </Grid.RowDefinitions>
-                                                        </Grid>
-                                                    </ItemsPanelTemplate>
-                                                </ItemsControl.ItemsPanel>
-
-                                                <TextBlock TextWrapping="Wrap" Text="Action to perform :" Margin="0,5"/>
-                                                <TextBox Grid.Row="1" Height="60" Text="{Binding Input.InputText,UpdateSourceTrigger=PropertyChanged}" />
-                                                <ItemsControl Grid.Row="2" ItemsSource="{Binding Input.InputText, Converter={StaticResource InputConverter}}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <ContentControl Content="{Binding SelectedScenarioAction}">
+                                        <ContentControl.Resources>
+                                            <DataTemplate DataType="{x:Type scenarioActionImplementations:PlayReversalAction}">
+                                                <ItemsControl>
+                                                    <ItemsControl.ItemContainerStyle>
+                                                        <Style>
+                                                            <Setter Property="Control.Margin" Value="0,5,0,5"/>
+                                                        </Style>
+                                                    </ItemsControl.ItemContainerStyle>
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
-                                                            <WrapPanel Orientation="Horizontal"/>
+                                                            <Grid>
+                                                                <Grid.RowDefinitions>
+                                                                    <RowDefinition Height="Auto"/>
+                                                                    <RowDefinition Height="Auto"/>
+                                                                    <RowDefinition/>
+                                                                </Grid.RowDefinitions>
+                                                            </Grid>
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Border BorderBrush="Black" BorderThickness="1">
-                                                                <ItemsControl Margin="5" ItemsSource="{Binding Converter={StaticResource InputSplitConverter}}">
-                                                                    <ItemsControl.ItemsPanel>
-                                                                        <ItemsPanelTemplate>
-                                                                            <StackPanel Orientation="Horizontal"/>
-                                                                        </ItemsPanelTemplate>
-                                                                    </ItemsControl.ItemsPanel>
-                                                                    <ItemsControl.ItemTemplate>
-                                                                        <DataTemplate>
-                                                                            <ContentControl Content="{Binding}">
-                                                                                <ContentControl.Style>
-                                                                                    <Style TargetType="{x:Type ContentControl}">
-                                                                                        <Style.Triggers>
-                                                                                            <DataTrigger Binding="{Binding}" Value="1">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/24px-InputIcon_1.png" Width="24" Height="24"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="2">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/24px-InputIcon_2.png" Width="24" Height="24"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="3">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/24px-InputIcon_3.png" Width="24" Height="24"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="4">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/24px-InputIcon_4.png" Width="24" Height="24"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="5">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/24px-InputIcon_5.png" Width="24" Height="24"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="6">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/24px-InputIcon_6.png" Width="24" Height="24"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="7">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/24px-InputIcon_7.png" Width="24" Height="24"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="8">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/24px-InputIcon_8.png" Width="24" Height="24"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="9">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/24px-InputIcon_9.png" Width="24" Height="24"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="P">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/22px-GGXRD_P_Prompt.png" Width="22" Height="22"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="K">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/22px-GGXRD_K_Prompt.png" Width="22" Height="22"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="S">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/22px-GGXRD_S_Prompt.png" Width="22" Height="22"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="H">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/22px-GGXRD_H_Prompt.png" Width="22" Height="22"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding}" Value="D">
-                                                                                                <Setter Property="ContentTemplate">
-                                                                                                    <Setter.Value>
-                                                                                                        <DataTemplate>
-                                                                                                            <Image Source="Images/Inputs/22px-GGXRD_D_Prompt.png" Width="22" Height="22"/>
-                                                                                                        </DataTemplate>
-                                                                                                    </Setter.Value>
-                                                                                                </Setter>
-                                                                                            </DataTrigger>
-                                                                                        </Style.Triggers>
-                                                                                    </Style>
-                                                                                </ContentControl.Style>
-                                                                            </ContentControl>
-                                                                        </DataTemplate>
-                                                                    </ItemsControl.ItemTemplate>
-                                                                </ItemsControl>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
 
-                                            </ItemsControl>
-                                        </DataTemplate>
-                                    </ContentControl.Resources>
-                                </ContentControl>
+                                                    <TextBlock TextWrapping="Wrap" Text="Action to perform :" Margin="0,5"/>
+                                                    <TextBox Grid.Row="1" Height="60" Text="{Binding Input.InputText, UpdateSourceTrigger=PropertyChanged}" />
+                                                    <ItemsControl Grid.Row="2" ItemsSource="{Binding Input.InputText, Converter={StaticResource InputConverter}}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel Orientation="Horizontal"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border BorderBrush="Black" BorderThickness="1">
+                                                                    <ItemsControl Margin="5" ItemsSource="{Binding Converter={StaticResource InputSplitConverter}}">
+                                                                        <ItemsControl.ItemsPanel>
+                                                                            <ItemsPanelTemplate>
+                                                                                <StackPanel Orientation="Horizontal"/>
+                                                                            </ItemsPanelTemplate>
+                                                                        </ItemsControl.ItemsPanel>
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <ContentControl Content="{Binding}">
+                                                                                    <ContentControl.Style>
+                                                                                        <Style TargetType="{x:Type ContentControl}">
+                                                                                            <Style.Triggers>
+                                                                                                <DataTrigger Binding="{Binding}" Value="1">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/24px-InputIcon_1.png" Width="24" Height="24"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="2">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/24px-InputIcon_2.png" Width="24" Height="24"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="3">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/24px-InputIcon_3.png" Width="24" Height="24"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="4">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/24px-InputIcon_4.png" Width="24" Height="24"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="5">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/24px-InputIcon_5.png" Width="24" Height="24"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="6">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/24px-InputIcon_6.png" Width="24" Height="24"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="7">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/24px-InputIcon_7.png" Width="24" Height="24"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="8">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/24px-InputIcon_8.png" Width="24" Height="24"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="9">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/24px-InputIcon_9.png" Width="24" Height="24"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="P">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/22px-GGXRD_P_Prompt.png" Width="22" Height="22"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="K">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/22px-GGXRD_K_Prompt.png" Width="22" Height="22"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="S">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/22px-GGXRD_S_Prompt.png" Width="22" Height="22"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="H">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/22px-GGXRD_H_Prompt.png" Width="22" Height="22"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                                <DataTrigger Binding="{Binding}" Value="D">
+                                                                                                    <Setter Property="ContentTemplate">
+                                                                                                        <Setter.Value>
+                                                                                                            <DataTemplate>
+                                                                                                                <Image Source="Images/Inputs/22px-GGXRD_D_Prompt.png" Width="22" Height="22"/>
+                                                                                                            </DataTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </DataTrigger>
+                                                                                            </Style.Triggers>
+                                                                                        </Style>
+                                                                                    </ContentControl.Style>
+                                                                                </ContentControl>
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ItemsControl>
+                                            </DataTemplate>
+                                        </ContentControl.Resources>
+                                    </ContentControl>
+
+                                    <Menu Grid.Row="1" HorizontalAlignment="Center">
+                                        <Menu.Resources>
+                                            <Image x:Shared="false" x:Key="Sol_Icon" Source="Images/Characters/GGXRD-R2_Sol_Badguy_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Ky_Icon" Source="Images/Characters/GGXRD-R2_Ky_Kiske_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="May_Icon" Source="Images/Characters/GGXRD-R2_May_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Millia_Icon" Source="Images/Characters/GGXRD-R2_Millia_Kiske_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Zato_Icon" Source="Images/Characters/GGXRD-R2_Zato-1_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Potemkin_Icon" Source="Images/Characters/GGXRD-R2_Potemkin_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Chipp_Icon" Source="Images/Characters/GGXRD-R2_Chipp_Zanuff_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Faust_Icon" Source="Images/Characters/GGXRD-R2_Faust_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Axl_Icon" Source="Images/Characters/GGXRD-R2_Axl_Low_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Venom_Icon" Source="Images/Characters/GGXRD-R2_Venom_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Slayer_Icon" Source="Images/Characters/GGXRD-R2_Slayer_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="I_no_Icon" Source="Images/Characters/GGXRD-R2_I-No_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Bedman_Icon" Source="Images/Characters/GGXRD-R2_Bedman_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Ramlethal_Icon" Source="Images/Characters/GGXRD-R2_Ramlethal_Valentine_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Sin_Icon" Source="Images/Characters/GGXRD-R2_Sin_Kiske_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Elphelt_Icon" Source="Images/Characters/GGXRD-R2_Elphelt_Valentine_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Leo_Icon" Source="Images/Characters/GGXRD-R2_Leo_Whitefang_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Johnny_Icon" Source="Images/Characters/GGXRD-R2_Johnny_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Jack_o_Icon" Source="Images/Characters/GGXRD-R2_Jack-O_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Jam_Icon" Source="Images/Characters/GGXRD-R2_Jam_Kuradoberi_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Haehyun_Icon" Source="Images/Characters/GGXRD-R2_Kum_Haehyun_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Raven_Icon" Source="Images/Characters/GGXRD-R2_Raven_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Dizzy_Icon" Source="Images/Characters/GGXRD-R2_Dizzy_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Baiken_Icon" Source="Images/Characters/GGXRD-R2_Baiken_Icon.png"/>
+                                            <Image x:Shared="false" x:Key="Answer_Icon" Source="Images/Characters/GGXRD-R2_Answer_Icon.png"/>
+                                        </Menu.Resources>
+                                        <MenuItem Header="Presets" ItemsSource="{Binding Presets}">
+                                            <MenuItem.ItemContainerStyle>
+                                                <Style TargetType="{x:Type MenuItem}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Sol">
+                                                            <Setter Property="Icon" Value="{StaticResource Sol_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Ky">
+                                                            <Setter Property="Icon" Value="{StaticResource Ky_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="May">
+                                                            <Setter Property="Icon" Value="{StaticResource May_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Millia">
+                                                            <Setter Property="Icon" Value="{StaticResource Millia_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Zato">
+                                                            <Setter Property="Icon" Value="{StaticResource Zato_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Potemkin">
+                                                            <Setter Property="Icon" Value="{StaticResource Potemkin_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Chipp">
+                                                            <Setter Property="Icon" Value="{StaticResource Chipp_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Faust">
+                                                            <Setter Property="Icon" Value="{StaticResource Faust_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Axl">
+                                                            <Setter Property="Icon" Value="{StaticResource Axl_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Venom">
+                                                            <Setter Property="Icon" Value="{StaticResource Venom_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Slayer">
+                                                            <Setter Property="Icon" Value="{StaticResource Slayer_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="I-No">
+                                                            <Setter Property="Icon" Value="{StaticResource I_no_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Bedman">
+                                                            <Setter Property="Icon" Value="{StaticResource Bedman_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Ramlethal">
+                                                            <Setter Property="Icon" Value="{StaticResource Ramlethal_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Sin">
+                                                            <Setter Property="Icon" Value="{StaticResource Sin_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Elphelt">
+                                                            <Setter Property="Icon" Value="{StaticResource Elphelt_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Leo">
+                                                            <Setter Property="Icon" Value="{StaticResource Leo_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Johnny">
+                                                            <Setter Property="Icon" Value="{StaticResource Johnny_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Jack-O">
+                                                            <Setter Property="Icon" Value="{StaticResource Jack_o_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Jam">
+                                                            <Setter Property="Icon" Value="{StaticResource Jam_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Haehyun">
+                                                            <Setter Property="Icon" Value="{StaticResource Haehyun_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Raven">
+                                                            <Setter Property="Icon" Value="{StaticResource Raven_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Dizzy">
+                                                            <Setter Property="Icon" Value="{StaticResource Dizzy_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Baiken">
+                                                            <Setter Property="Icon" Value="{StaticResource Baiken_Icon}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Character.CharName}" Value="Answer">
+                                                            <Setter Property="Icon" Value="{StaticResource Answer_Icon}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </MenuItem.ItemContainerStyle>
+                                            <MenuItem.Resources>
+                                                <HierarchicalDataTemplate DataType="{x:Type presets:Preset}" ItemsSource="{Binding CharacterMoves}">
+                                                    <TextBlock Text="{Binding Character.CharName, FallbackValue=Universal}"/>
+                                                    <HierarchicalDataTemplate.ItemContainerStyle>
+                                                        <Style TargetType="{x:Type MenuItem}">
+                                                            <Setter Property="Command" Value="{Binding InsertPresetInputCommand, ElementName=viewModel}" />
+                                                            <Setter Property="CommandParameter" Value="{Binding Input}" />
+                                                        </Style>
+                                                    </HierarchicalDataTemplate.ItemContainerStyle>
+                                                </HierarchicalDataTemplate>
+                                                <HierarchicalDataTemplate DataType="{x:Type presets:CharacterMove}">                                                    
+                                                    <TextBlock Text="{Binding Name}"/>
+                                                </HierarchicalDataTemplate>
+                                            </MenuItem.Resources>
+                                        </MenuItem>
+                                    </Menu>
+                                    
+                                </Grid>
+                                
                             </GroupBox>
                             <GroupBox Grid.Column="2" Grid.Row="0" Header="How often?">
                                 <ContentControl Content="{Binding SelectedScenarioFrequency}">
