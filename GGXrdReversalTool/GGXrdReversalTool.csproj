@@ -19,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Images\Characters" />
       <Folder Include="Images\Inputs" />
     </ItemGroup>
 
@@ -51,6 +52,56 @@
       <Resource Include="Images\Inputs\24px-InputIcon_8.png" />
       <None Remove="Images\Inputs\24px-InputIcon_9.png" />
       <Resource Include="Images\Inputs\24px-InputIcon_9.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Answer_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Answer_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Axl_Low_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Axl_Low_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Baiken_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Baiken_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Bedman_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Bedman_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Chipp_Zanuff_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Chipp_Zanuff_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Dizzy_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Dizzy_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Faust_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Faust_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_I-No_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_I-No_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Jack-O_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Jack-O_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Jam_Kuradoberi_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Jam_Kuradoberi_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Johnny_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Johnny_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Kum_Haehyun_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Kum_Haehyun_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Ky_Kiske_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Ky_Kiske_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Leo_Whitefang_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Leo_Whitefang_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_May_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_May_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Millia_Rage_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Millia_Rage_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Potemkin_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Potemkin_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Ramlethal_Valentine_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Ramlethal_Valentine_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Raven_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Raven_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Sin_Kiske_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Sin_Kiske_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Slayer_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Slayer_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Sol_Badguy_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Sol_Badguy_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Venom_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Venom_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Zato-1_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Zato-1_Icon.png" />
+      <None Remove="Images\Characters\GGXRD-R2_Elphelt_Valentine_Icon.png" />
+      <Resource Include="Images\Characters\GGXRD-R2_Elphelt_Valentine_Icon.png" />
     </ItemGroup>
 
 </Project>

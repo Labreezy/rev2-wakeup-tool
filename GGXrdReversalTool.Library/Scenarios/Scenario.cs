@@ -1,4 +1,5 @@
-﻿using GGXrdReversalTool.Library.Memory;
+﻿using GGXrdReversalTool.Library.Characters;
+using GGXrdReversalTool.Library.Memory;
 using GGXrdReversalTool.Library.Models;
 using GGXrdReversalTool.Library.Models.Inputs;
 using GGXrdReversalTool.Library.Scenarios.Action;
@@ -125,7 +126,7 @@ public class Scenario : IDisposable
     }
 
     
-    private int GetTiming(ScenarioEventTypes eventType, NameWakeupData currentDummy, SlotInput scenarioActionInput)
+    private int GetTiming(ScenarioEventTypes eventType, Character currentDummy, SlotInput scenarioActionInput)
     {
         //TODO fix why - 2 ?
         switch (eventType)

@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using GGXrdReversalTool.Library.Characters;
 using GGXrdReversalTool.Library.Memory.Pointer;
-using GGXrdReversalTool.Library.Models;
 using GGXrdReversalTool.Library.Models.Inputs;
 
 namespace GGXrdReversalTool.Library.Memory.Implementations;
@@ -17,43 +17,16 @@ public class MemoryReader : IMemoryReader
         _process = process;
     }
     
-    private readonly List<NameWakeupData> _nameWakeupDataList = new()
-    {
-        new NameWakeupData("Sol", 25, 21),
-        new NameWakeupData("Ky", 23, 21),
-        new NameWakeupData("May", 25, 22),
-        new NameWakeupData("Millia", 25, 23),
-        new NameWakeupData("Zato", 25, 22),
-        new NameWakeupData("Potemkin", 24, 22),
-        new NameWakeupData("Chipp", 30, 24),
-        new NameWakeupData("Faust", 25, 29),
-        new NameWakeupData("Axl", 25, 21),
-        new NameWakeupData("Venom", 21, 26),
-        new NameWakeupData("Slayer", 26, 20),
-        new NameWakeupData("I-No", 24, 20),
-        new NameWakeupData("Bedman", 24, 30),
-        new NameWakeupData("Ramlethal", 25, 23),
-        new NameWakeupData("Sin", 30, 21),
-        new NameWakeupData("Elphelt", 27, 27),
-        new NameWakeupData("Leo", 28, 26),
-        new NameWakeupData("Johnny", 25, 24),
-        new NameWakeupData("Jack-O'", 25, 23),
-        new NameWakeupData("Jam", 26, 25),
-        new NameWakeupData("Haehyun", 22, 27),
-        new NameWakeupData("Raven", 25, 24),
-        new NameWakeupData("Dizzy", 25, 24),
-        new NameWakeupData("Baiken", 25, 21),
-        new NameWakeupData("Answer", 25, 25)
-    };
+    
 
 
     private readonly MemoryPointer _p1AnimStringPtr = new("P1AnimStringPtr");
     private readonly MemoryPointer _p2AnimStringPtr = new("P2AnimStringPtr");
     private readonly MemoryPointer _frameCountPtr = new("FrameCountPtr");
-    private readonly MemoryPointer _dummyIdPtr = new MemoryPointer("DummyIdPtr");
-    private readonly MemoryPointer _recordingSlotPtr = new MemoryPointer("RecordingSlotPtr");
-    private readonly MemoryPointer _p1ComboCountPtr = new MemoryPointer("P1ComboCountPtr");
-    private readonly MemoryPointer _p2ComboCountPtr = new MemoryPointer("P2ComboCountPtr");
+    private readonly MemoryPointer _dummyIdPtr = new("DummyIdPtr");
+    private readonly MemoryPointer _recordingSlotPtr = new("RecordingSlotPtr");
+    private readonly MemoryPointer _p1ComboCountPtr = new("P1ComboCountPtr");
+    private readonly MemoryPointer _p2ComboCountPtr = new("P2ComboCountPtr");
     private const int RecordingSlotSize = 4808;
 
     public string ReadAnimationString(int player)
@@ -76,10 +49,10 @@ public class MemoryReader : IMemoryReader
         return Read<int>(_frameCountPtr);
     }
 
-    public NameWakeupData GetCurrentDummy()
+    public Character GetCurrentDummy()
     {
         var index = Read<int>(_dummyIdPtr);
-        var result = _nameWakeupDataList[index];
+        var result = Character.Characters[index];
 
         return result;
     }

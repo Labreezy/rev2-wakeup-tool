@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -8,6 +9,7 @@ using GGXrdReversalTool.Library.Memory;
 using GGXrdReversalTool.Library.Memory.Implementations;
 using GGXrdReversalTool.Library.Models;
 using GGXrdReversalTool.Library.Models.Inputs;
+using GGXrdReversalTool.Library.Presets;
 using GGXrdReversalTool.Library.Scenarios;
 using GGXrdReversalTool.Library.Scenarios.Action;
 using GGXrdReversalTool.Library.Scenarios.Action.Implementations;
@@ -27,11 +29,13 @@ public class ScenarioWindowViewModel : ViewModelBase
     {
         _process = Process.GetProcessesByName("GuiltyGearXrd").FirstOrDefault()!;
 
+#if !DEBUG
         if (_process == null)
         {
             //TODO explicit error
             throw new NotImplementedException();
         }
+#endif
 
         _memoryReader = new MemoryReader(_process);
 
@@ -42,7 +46,7 @@ public class ScenarioWindowViewModel : ViewModelBase
         });
 
 
-        _selectedScenarioAction = new PlayReversalAction() { Input = new SlotInput("6,2,!3H") };
+        _selectedScenarioAction = new PlayReversalAction() { Input = new SlotInput() };
         _selectedScenarioFrequency = new PercentageFrequency();
 
     }
@@ -122,6 +126,8 @@ public class ScenarioWindowViewModel : ViewModelBase
         }
     }
 
+    public IEnumerable<Preset> Presets => Preset.Presets;
+
 
     private ObservableCollection<IScenarioEvent> _scenarioEvents;
     public ObservableCollection<IScenarioEvent> ScenarioEvents
@@ -154,7 +160,7 @@ public class ScenarioWindowViewModel : ViewModelBase
         get => _selectedScenarioAction;
         set
         {
-            if (Equals(value, _selectedScenarioAction)) return;
+            // if (Equals(value, _selectedScenarioAction)) return;
             _selectedScenarioAction = value;
             OnPropertyChanged();
         }
@@ -187,9 +193,12 @@ public class ScenarioWindowViewModel : ViewModelBase
 
     private bool CanEnable()
     {
+        
         return _selectedScenarioEvent != null &&
                _selectedScenarioAction != null &&
                _selectedScenarioFrequency != null &&
+               
+               //TODO check with all event types
                ((_selectedScenarioEvent is AnimationEvent && _selectedScenarioAction.Input.IsReversalValid) || (_selectedScenarioEvent is ComboEvent && _selectedScenarioAction.Input.IsValid)) &&
                _scenario is not { IsRunning: true };
     }
@@ -211,6 +220,31 @@ public class ScenarioWindowViewModel : ViewModelBase
         
         
         //TODO Implement
+    }
+
+    #endregion
+
+    #region InsertPresetInputCommand
+
+    public RelayCommand<string> InsertPresetInputCommand => new(InsertPresetInput, CanInsertPresetInput);
+
+    private void InsertPresetInput(string input)
+    {
+        if (_selectedScenarioAction is PlayReversalAction playReversal)
+        {
+            var newInput = playReversal.Input.InputText +
+                           $"{(!playReversal.Input.InputText.EndsWith(",") && !string.IsNullOrWhiteSpace(playReversal.Input.InputText)  ? "," : "")}" +
+                           input;
+
+            SelectedScenarioAction = new PlayReversalAction()
+                { Input = new SlotInput(newInput), MemoryReader = playReversal.MemoryReader };
+        }
+    }
+
+    private bool CanInsertPresetInput(string input)
+    {
+        //TODO implement (cannot insert if scenario is running)
+        return true;
     }
 
     #endregion
