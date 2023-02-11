@@ -17,27 +17,28 @@ using GGXrdReversalTool.Library.Scenarios.Event;
 using GGXrdReversalTool.Library.Scenarios.Event.Implementations;
 using GGXrdReversalTool.Library.Scenarios.Frequency;
 using GGXrdReversalTool.Library.Scenarios.Frequency.Implementations;
+using GGXrdReversalTool.Updates;
 
 namespace GGXrdReversalTool.ViewModels;
 
 public class ScenarioWindowViewModel : ViewModelBase
 {
-    private readonly Process _process;
     private readonly IMemoryReader _memoryReader;
     private Scenario? _scenario;
+    private UpdateManager _updateManager = new();
     public ScenarioWindowViewModel()
     {
-        _process = Process.GetProcessesByName("GuiltyGearXrd").FirstOrDefault()!;
+        var process = Process.GetProcessesByName("GuiltyGearXrd").FirstOrDefault();
 
 #if !DEBUG
-        if (_process == null)
+        if (process == null)
         {
             //TODO explicit error
             throw new NotImplementedException();
         }
 #endif
 
-        _memoryReader = new MemoryReader(_process);
+        _memoryReader = new MemoryReader(process);
 
         _scenarioEvents = new ObservableCollection<IScenarioEvent>(new IScenarioEvent[]
         {
@@ -74,20 +75,20 @@ public class ScenarioWindowViewModel : ViewModelBase
     public RelayCommand<string> ChangeReplayTypeCommand => new(ChangeReplayTypeCommandExecute, ChangeReplayTypeCommandCanExecute);
     private void ChangeReplayTypeCommandExecute(string parameter)
     {
-        ReplayTriggerTypes replayTriggerType =
-            (ReplayTriggerTypes) Enum.Parse(typeof(ReplayTriggerTypes), parameter);
+        if (!Enum.TryParse(parameter, false, out ReplayTriggerTypes value))
+        {
+            return;
+        }
 
-        //TODO Implement
-        // this._reversalTool.ChangeReplayTrigger(replayTriggerType);
+        ReversalToolConfiguration.Set("ReplayTriggerType", parameter);
+        _selectedScenarioAction?.Init();
 
         OnPropertyChanged(nameof(IsAsmReplayTypeChecked));
         OnPropertyChanged(nameof(IsKeyStrokeReplayTypeChecked));
     }
     private bool ChangeReplayTypeCommandCanExecute(string parameter)
     {
-        //TODO Implement
-        return true;
-        // return this._reversalTool.ReplayTriggerType.ToString() != parameter;
+        return ReversalToolConfiguration.Get("ReplayTriggerType") != parameter;
     }
 
         
@@ -100,18 +101,40 @@ public class ScenarioWindowViewModel : ViewModelBase
 
     private bool CanCheckUpdates()
     {
-        return true;
-        //TODO Implement 
-        // return !IsWakeupReversalStarted && !IsBlockstunReversalStarted && !IsRandomBurstStarted;
+        return _scenario is not { IsRunning: true };
     }
     private void CheckUpdates()
     {
-        // this.UpdateProcess(true);
+        this._updateManager.UpdateApplication();
     }
 
 
 
     #endregion
+
+    #region DonateCommand
+
+    public RelayCommand DonateCommand => new(Donate);
+
+    private void Donate()
+    {
+        string target = "https://paypal.me/Iquisiquis";
+        Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+
+    }
+
+    #endregion
+
+    #region AboutCommand
+
+    public RelayCommand AboutCommand => new(About);
+
+    private void About()
+    {
+        throw new NotImplementedException();
+    }
+    #endregion
+    
     public string Title => $"GGXrd Rev 2 Reversal Tool v{ReversalToolConfiguration.Get("CurrentVersion")}";
 
     public bool AutoUpdate
@@ -120,7 +143,6 @@ public class ScenarioWindowViewModel : ViewModelBase
         set
         {
             ReversalToolConfiguration.Set("AutoUpdate", value ? "1" : "0");
-
 
             OnPropertyChanged();
         }

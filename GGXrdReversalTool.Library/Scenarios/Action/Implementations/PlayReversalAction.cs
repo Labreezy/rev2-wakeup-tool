@@ -10,17 +10,20 @@ namespace GGXrdReversalTool.Library.Scenarios.Action.Implementations;
 
 public class PlayReversalAction : IScenarioAction
 {
-    public IMemoryReader MemoryReader { get; set; }
+    public IMemoryReader? MemoryReader { get; set; }
     public SlotInput Input { get; set; } = null!;
 
     private IReplayTrigger? _replayTrigger;
 
     public void Init()
     {
-        InitReplayTrigger();
+        if (MemoryReader != null)
+        {
+            InitReplayTrigger();
 
 
-        MemoryReader.WriteInputInSlot(1, Input);
+            MemoryReader.WriteInputInSlot(1, Input);
+        }
     }
 
     public void Execute()
