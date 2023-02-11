@@ -55,9 +55,6 @@
     <Compile Include="GitHubClient.cs" />
     <Compile Include="Keyboard.cs" />
     <Compile Include="LogManager.cs" />
-    <Compile Include="Memory\IMemoryReader.cs" />
-    <Compile Include="Memory\Implementations\MemoryReader.cs" />
-    <Compile Include="Memory\MemoryPointer.cs" />
     <Compile Include="Memory\MemoryReader.cs" />
     <Compile Include="NameWakeupData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -74,15 +71,7 @@
     <Compile Include="Replay\ReplayTriggerFactory.cs" />
     <Compile Include="Replay\ReplayTriggerType.cs" />
     <Compile Include="ReversalTool.cs" />
-    <Compile Include="ReversalTool2.cs" />
     <Compile Include="ReversalType.cs" />
-    <Compile Include="Scenarios\Events\Implementations\PercentageFrequency.cs" />
-    <Compile Include="Scenarios\Events\Implementations\PlayReversalAction.cs" />
-    <Compile Include="Scenarios\Events\Implementations\WakeupEvent.cs" />
-    <Compile Include="Scenarios\Events\ScenarioEvent.cs" />
-    <Compile Include="Scenarios\Scenario.cs" />
-    <Compile Include="Scenarios\ScenarioAction.cs" />
-    <Compile Include="Scenarios\ScenarioFrequency.cs" />
     <Compile Include="SlotInput.cs" />
     <Compile Include="UpdateManager.cs" />
   </ItemGroup>

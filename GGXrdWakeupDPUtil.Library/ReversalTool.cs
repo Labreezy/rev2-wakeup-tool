@@ -15,10 +15,9 @@ using GGXrdWakeupDPUtil.Library.Replay.Keyboard;
 
 namespace GGXrdWakeupDPUtil.Library
 {
-    [Obsolete]
     public class ReversalTool : IDisposable
     {
-        private readonly string _ggProcName = ConfigurationManager.AppSettings.Get("GGProcessName");
+        private readonly string _ggprocname = ConfigurationManager.AppSettings.Get("GGProcessName");
 
 
         private readonly List<NameWakeupData> _nameWakeupDataList = new List<NameWakeupData>
@@ -54,22 +53,30 @@ namespace GGXrdWakeupDPUtil.Library
 
 
         #region Offsets
-        private readonly MemoryPointer _recordingSlotPtr = new MemoryPointer("RecordingSlotPtr");
-        private readonly MemoryPointer _p1AnimStringPtr = new MemoryPointer("P1AnimStringPtr");
-        private readonly MemoryPointer _p2AnimStringPtr = new MemoryPointer("P2AnimStringPtr");
-        private readonly MemoryPointer _frameCountPtr = new MemoryPointer("FrameCountOffset");
-        private readonly MemoryPointer _p1ComboCountPtr = new MemoryPointer("P1ComboCountPtr");
-        private readonly MemoryPointer _p2ComboCountPtr = new MemoryPointer("P2ComboCountPtr");
-        private readonly MemoryPointer _dummyIdPtr = new MemoryPointer("DummyIdPtr");
-        private readonly MemoryPointer _replayKeyOffset = new MemoryPointer("ReplayKeyOffset");
-        private readonly MemoryPointer _p2BlockStunPtr = new MemoryPointer("P2BlockStunPtr");
+        private readonly IntPtr _p2IdOffset = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2IdOffset"), 16));
+        private readonly IntPtr _recordingSlotPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("RecordingSlotPtr"), 16));
+        private readonly int _recordingSlotPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("RecordingSlotPtrOffset"), 16);
+        private readonly IntPtr _p1AnimStringPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1AnimStringPtr"), 16));
+        private readonly int _p1AnimStringPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1AnimStringPtrOffset"), 16);
+        private readonly IntPtr _p2AnimStringPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2AnimStringPtr"), 16));
+        private readonly int _p2AnimStringPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2AnimStringPtrOffset"), 16);
+        private readonly int _frameCountOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("FrameCountOffset"), 16);
+        private readonly IntPtr _p1ComboCountPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1ComboCountPtr"), 16));
+        private readonly int _p1ComboCountPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P1ComboCountPtrOffset"), 16);
+        private readonly IntPtr _p2ComboCountPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2ComboCountPtr"), 16));
+        private readonly int _p2ComboCountPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("P2ComboCountPtrOffset"), 16);
+        private readonly IntPtr _dummyIdPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("DummyIdPtr"), 16));
+        private readonly int _dummyIdPtrOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("DummyIdPtrOffset"), 16);
+        private readonly int _replayKeyOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("ReplayKeyOffset"), 16);
+
+        private readonly IntPtr _blockStunPtr = new IntPtr(Convert.ToInt32(ConfigurationManager.AppSettings.Get("BlockStunPtr"), 16));
+        private readonly int _blockStunOffset = Convert.ToInt32(ConfigurationManager.AppSettings.Get("BlockStunPtrOffset"), 16);
         
         #endregion
 
-        private const string FaceDownAnimation = "CmnActFDown2Stand";
-        private const string FaceUpAnimation = "CmnActBDown2Stand";
-        private const string WallSplatAnimation = "CmnActWallHaritsukiGetUp";
-        private const string TechAnimation = "CmnActUkemi";
+        private readonly string FaceDownAnimation = "CmnActFDown2Stand";
+        private readonly string FaceUpAnimation = "CmnActBDown2Stand";
+        private readonly string WallSplatAnimation = "CmnActWallHaritsukiGetUp";
 
         private const int RecordingSlotSize = 4808;
 
@@ -118,25 +125,15 @@ namespace GGXrdWakeupDPUtil.Library
         private static bool _runRandomBurstThread;
         private static readonly object RunRandomBurstThreadLock = new object();
         public delegate void RandomBurstLoopErrorHandler(Exception ex);
-        public event RandomBurstLoopErrorHandler RandomBurstLoopErrorOccured;
+        public event RandomBurstLoopErrorHandler RandomBurstlLoopErrorOccured;
         #endregion
 
-        #region Block Reversal Loop
+        #region Reversal Loop
         private static bool _runBlockReversalThread;
         private static readonly object RunBlockReversalThreadLock = new object();
         public delegate void BlockReversalLoopErrorHandler(Exception ex);
 
         public event BlockReversalLoopErrorHandler BlockReversalLoopErrorOccured;
-        #endregion
-
-        #region Tech Reversal loop
-
-        private static bool _runTechReversalThread;
-        private static readonly object RunTechReversalThreadLock = new object();
-
-        public delegate void TechReversalLoopErrorHandler(Exception ex);
-
-        public event TechReversalLoopErrorHandler TechReversalLoopErrorOccured;
         #endregion
 
 
@@ -185,7 +182,7 @@ namespace GGXrdWakeupDPUtil.Library
 
         public void AttachToProcess()
         {
-            var process = Process.GetProcessesByName(_ggProcName).FirstOrDefault();
+            var process = Process.GetProcessesByName(_ggprocname).FirstOrDefault();
 
             this._process = process ?? throw new Exception("GG process not found!");
 
@@ -212,7 +209,8 @@ namespace GGXrdWakeupDPUtil.Library
 
         public NameWakeupData GetDummy()
         {
-            var index = _memoryReader.Read<int>(_dummyIdPtr);
+            var index = this._memoryReader.ReadWithOffsets<int>(_dummyIdPtr, _dummyIdPtrOffset);
+
             var result = _nameWakeupDataList[index];
 
             return result;
@@ -221,14 +219,14 @@ namespace GGXrdWakeupDPUtil.Library
 
         public bool SetInputInSlot(int slotNumber, SlotInput slotInput)
         {
-            var baseAddress = this._memoryReader.GetAddressWithOffsets(_recordingSlotPtr.Pointer, _recordingSlotPtr.Offsets.ToArray());
+            var baseAddress = this._memoryReader.GetAddressWithOffsets(_recordingSlotPtr, _recordingSlotPtrOffset);
             var slotAddress = IntPtr.Add(baseAddress, RecordingSlotSize * (slotNumber - 1));
 
             return this._memoryReader.Write(slotAddress, slotInput.Content);
         }
         public byte[] ReadInputInSlot(int slotNumber)
         {
-            var baseAddress = this._memoryReader.GetAddressWithOffsets(_recordingSlotPtr.Pointer, _recordingSlotPtr.Offsets.ToArray());
+            var baseAddress = this._memoryReader.GetAddressWithOffsets(_recordingSlotPtr, _recordingSlotPtrOffset);
             var slotAddress = IntPtr.Add(baseAddress, RecordingSlotSize * (slotNumber - 1));
 
             var readBytes = this._memoryReader.ReadBytes(slotAddress, RecordingSlotSize);
@@ -252,7 +250,11 @@ namespace GGXrdWakeupDPUtil.Library
             {
                 using (StreamWriter writer = new StreamWriter(filePath))
                 {
-                    writer.Write(input.Select(x => x.ToString("X")).Aggregate((a, b) => $"{a},{b}")
+                    writer.Write(input.Select(x =>
+                        {
+                            return x.ToString("X");
+                        })
+                        .Aggregate((a, b) => { return $"{a},{b}"; })
                     );
                 }
             }
@@ -276,13 +278,16 @@ namespace GGXrdWakeupDPUtil.Library
                     text = streamReader.ReadToEnd().Trim();
                 }
 
-                var result = text.Split(',').Select(x => Convert.ToByte(x, 16)).ToArray();
+                var result = text.Split(',').Select(x =>
+                {
+                    return Convert.ToByte(x, 16);
+                }).ToArray();
                 return result;
             }
             catch (Exception e)
             {
                 LogManager.Instance.WriteException(e);
-                return Array.Empty<byte>();
+                return new byte[0];
             }
 
         }
@@ -479,7 +484,7 @@ namespace GGXrdWakeupDPUtil.Library
                     {
                         LogManager.Instance.WriteException(ex);
                         StopRandomBurstLoop();
-                        RandomBurstLoopErrorOccured?.Invoke(ex);
+                        RandomBurstlLoopErrorOccured?.Invoke(ex);
                         return;
                     }
 
@@ -583,91 +588,6 @@ namespace GGXrdWakeupDPUtil.Library
                 _runBlockReversalThread = false;
             }
         }
-        
-        public void StartTechReversalLoop(SlotInput slotInput, int percentage, int delay)
-        {
-            lock (RunTechReversalThreadLock)
-            {
-                _runTechReversalThread = true;
-            }
-
-            Thread techReversalThread = new Thread(() =>
-                {
-                    LogManager.Instance.WriteLine("Tech Reversal Thread start");
-
-                    bool localRunTechReversalThread = true;
-
-                    Random rnd = new Random();
-                    
-                    bool willReversal = rnd.Next(0, 101) <= percentage;
-
-                    var oldAnimation = this.ReadAnimationString(2);
-
-                    while (localRunTechReversalThread && !this._process.HasExited)
-                    {
-
-
-                        try
-                        {
-                            var animation = this.ReadAnimationString(2);
-
-                            if (animation == TechAnimation && oldAnimation != animation)
-                            {
-                                if (willReversal)
-                                {
-                                    this.Wait(6); // tech recovery
-                                    this.Wait(Math.Max(0, slotInput.ReversalFrameIndex));
-                                    this.Wait(delay);
-
-                                    this.PlayReversal();
-                                }
-
-                                willReversal = rnd.Next(0, 101) <= percentage;
-
-                                Thread.Sleep(32);
-                            }
-
-                            oldAnimation = animation;
-                            
-                            Thread.Sleep(10); //check about twice by frame
-                        }
-                        catch (Exception ex)
-                        {
-                            LogManager.Instance.WriteException(ex);
-                            StopTechReversalLoop();
-                            TechReversalLoopErrorOccured?.Invoke(ex);
-                            return;
-                        }
-
-
-
-
-                        lock (RunTechReversalThreadLock)
-                        {
-                            localRunTechReversalThread = _runTechReversalThread;
-                        }
-                        
-                        Thread.Sleep(1);
-                    }
-                    
-                    
-                    
-                    LogManager.Instance.WriteLine("Block Reversal Thread ended");
-                })
-                { Name = "techReversalThread" };
-            
-            techReversalThread.Start();
-            
-            this.BringWindowToFront();
-        }
-        
-        public void StopTechReversalLoop()
-        {
-            lock (RunTechReversalThreadLock)
-            {
-                _runTechReversalThread = false;
-            }
-        }
 
 
         #region Private
@@ -741,24 +661,27 @@ namespace GGXrdWakeupDPUtil.Library
 
         private string ReadAnimationString(int player)
         {
-            const int length = 32;
-
-            switch (player)
+            if (player == 1)
             {
-                case 1:
-                    return _memoryReader.ReadString(_p1AnimStringPtr, length);
-                case 2:
-                    return _memoryReader.ReadString(_p2AnimStringPtr, length);
-                default:
-                    return string.Empty;
+                var length = 32;
+                return this._memoryReader.ReadStringWithOffsets(_p1AnimStringPtr, length, _p1AnimStringPtrOffset);
             }
+
+            if (player == 2)
+            {
+                var length = 32;
+                
+                return this._memoryReader.ReadStringWithOffsets(_p2AnimStringPtr, length, _p2AnimStringPtrOffset);
+            }
+
+            return string.Empty;
         }
 
         private int GetBlockstun(int player)
         {
             if (player == 2)
             {
-                return this._memoryReader.Read<int>(_p2BlockStunPtr);
+                return this._memoryReader.ReadWithOffsets<int>(this._blockStunPtr, this._blockStunOffset);
             }
 
             throw new NotImplementedException();
@@ -766,7 +689,8 @@ namespace GGXrdWakeupDPUtil.Library
 
         private int FrameCount()
         {
-            return _memoryReader.Read<int>(_frameCountPtr);
+            var address = IntPtr.Add(this._process.MainModule.BaseAddress, _frameCountOffset);
+            return this._memoryReader.Read<int>(address);
         }
         private int GetWakeupTiming(NameWakeupData currentDummy, bool playReversalOnWallSplat)
         {
@@ -794,22 +718,23 @@ namespace GGXrdWakeupDPUtil.Library
         {
             //TODO find the pointer for player 2
 
-            switch (player)
+            if (player == 1)
             {
-                case 1:
-                    return _memoryReader.Read<int>(_p1ComboCountPtr);
-                case 2:
-                    return _memoryReader.Read<int>(_p2ComboCountPtr);
-                default:
-                    throw new NotImplementedException();
+                return this._memoryReader.ReadWithOffsets<int>(_p1ComboCountPtr, _p1ComboCountPtrOffset);
             }
+
+            if (player == 2)
+            {
+                return this._memoryReader.ReadWithOffsets<int>(_p2ComboCountPtr, _p2ComboCountPtrOffset);
+            }
+
+            throw new NotImplementedException();
         }
 
         private int GetReplayKey()
         {
-            var result = this._memoryReader.Read<int>(_replayKeyOffset);
-            
-            return result;
+            IntPtr address = IntPtr.Add(this._process.MainModule.BaseAddress, _replayKeyOffset);
+            return this._memoryReader.Read<int>(address);
         }
 
         //TODO Remove?
@@ -913,6 +838,6 @@ namespace GGXrdWakeupDPUtil.Library
         #endregion
 
 
-        
+
     }
 }
