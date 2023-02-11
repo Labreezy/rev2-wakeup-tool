@@ -16,9 +16,6 @@ public class MemoryReader : IMemoryReader
     {
         _process = process;
     }
-    
-    
-
 
     private readonly MemoryPointer _p1AnimStringPtr = new("P1AnimStringPtr");
     private readonly MemoryPointer _p2AnimStringPtr = new("P2AnimStringPtr");
@@ -27,7 +24,12 @@ public class MemoryReader : IMemoryReader
     private readonly MemoryPointer _recordingSlotPtr = new("RecordingSlotPtr");
     private readonly MemoryPointer _p1ComboCountPtr = new("P1ComboCountPtr");
     private readonly MemoryPointer _p2ComboCountPtr = new("P2ComboCountPtr");
+    private readonly MemoryPointer _p1ReplayKeyPtr = new("P1ReplayKeyPtr");
+    private readonly MemoryPointer _p2ReplayKeyPtr = new("P2ReplayKeyPtr");
     private const int RecordingSlotSize = 4808;
+
+
+    public Process Process => _process;
 
     public string ReadAnimationString(int player)
     {
@@ -68,15 +70,22 @@ public class MemoryReader : IMemoryReader
 
     public int GetComboCount(int player)
     {
-        switch (player)
+        return player switch
         {
-            case 1:
-                return Read<int>(_p1ComboCountPtr);
-            case 2:
-                return Read<int>(_p2ComboCountPtr);
-            default:
-                throw new NotImplementedException();
-        }
+            1 => Read<int>(_p1ComboCountPtr),
+            2 => Read<int>(_p2ComboCountPtr),
+            _ => throw new ArgumentException($"Player index is invalid : {player}")
+        };
+    }
+
+    public int GetReplayKeyCode(int player)
+    {
+        return player switch
+        {
+            1 => Read<int>(_p1ReplayKeyPtr),
+            2 => Read<int>(_p2ReplayKeyPtr),
+            _ => throw new ArgumentException($"Player index is invalid : {player}")
+        };
     }
 
 
