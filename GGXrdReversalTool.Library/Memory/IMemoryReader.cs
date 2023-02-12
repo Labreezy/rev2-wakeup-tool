@@ -1,4 +1,5 @@
-﻿using GGXrdReversalTool.Library.Characters;
+﻿using System.Diagnostics;
+using GGXrdReversalTool.Library.Characters;
 using GGXrdReversalTool.Library.Models;
 using GGXrdReversalTool.Library.Models.Inputs;
 
@@ -11,4 +12,6 @@ public interface IMemoryReader
     Character GetCurrentDummy();
     bool WriteInputInSlot(int slotNumber, SlotInput slotInput);
     int GetComboCount(int player);
+    int GetReplayKeyCode(int player);
+    Process Process { get; }
 }
