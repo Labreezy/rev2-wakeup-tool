@@ -47,8 +47,8 @@ public class ScenarioWindowViewModel : ViewModelBase
         });
 
 
-        _selectedScenarioAction = new PlayReversalAction() { Input = new SlotInput() };
-        _selectedScenarioFrequency = new PercentageFrequency();
+        _scenarioAction = new PlayReversalAction() { Input = new SlotInput() };
+        _scenarioFrequency = new PercentageFrequency();
 
     }
 
@@ -81,7 +81,7 @@ public class ScenarioWindowViewModel : ViewModelBase
         }
 
         ReversalToolConfiguration.Set("ReplayTriggerType", parameter);
-        _selectedScenarioAction?.Init();
+        _scenarioAction?.Init();
 
         OnPropertyChanged(nameof(IsAsmReplayTypeChecked));
         OnPropertyChanged(nameof(IsKeyStrokeReplayTypeChecked));
@@ -105,7 +105,7 @@ public class ScenarioWindowViewModel : ViewModelBase
     }
     private void CheckUpdates()
     {
-        this._updateManager.UpdateApplication();
+        _updateManager.UpdateApplication();
     }
 
 
@@ -150,7 +150,6 @@ public class ScenarioWindowViewModel : ViewModelBase
 
     public IEnumerable<Preset> Presets => Preset.Presets;
 
-
     private ObservableCollection<IScenarioEvent> _scenarioEvents;
     public ObservableCollection<IScenarioEvent> ScenarioEvents
     {
@@ -176,27 +175,26 @@ public class ScenarioWindowViewModel : ViewModelBase
     }
 
 
-    private IScenarioAction? _selectedScenarioAction;
-    public IScenarioAction? SelectedScenarioAction
+    private IScenarioAction? _scenarioAction;
+    public IScenarioAction? ScenarioAction
     {
-        get => _selectedScenarioAction;
+        get => _scenarioAction;
         set
         {
             // if (Equals(value, _selectedScenarioAction)) return;
-            _selectedScenarioAction = value;
+            _scenarioAction = value;
             OnPropertyChanged();
         }
     }
 
-    private IScenarioFrequency? _selectedScenarioFrequency;
-
-    public IScenarioFrequency? SelectedScenarioFrequency
+    private IScenarioFrequency? _scenarioFrequency;
+    public IScenarioFrequency? ScenarioFrequency
     {
-        get => _selectedScenarioFrequency;
+        get => _scenarioFrequency;
         set
         {
-            if (Equals(value, _selectedScenarioFrequency)) return;
-            _selectedScenarioFrequency = value;
+            if (Equals(value, _scenarioFrequency)) return;
+            _scenarioFrequency = value;
             OnPropertyChanged();
         }
     }
@@ -208,20 +206,25 @@ public class ScenarioWindowViewModel : ViewModelBase
 
     private void Enable()
     {
-        this._scenario = new Scenario(this._memoryReader, SelectedScenarioEvent, SelectedScenarioAction, SelectedScenarioFrequency);
+        if (SelectedScenarioEvent == null || ScenarioAction == null || ScenarioFrequency == null)
+        {
+            return;
+        }
+
+        _scenario = new Scenario(_memoryReader, SelectedScenarioEvent, ScenarioAction, ScenarioFrequency);
         
-        this._scenario.Run();
+        _scenario.Run();
     }
 
     private bool CanEnable()
     {
         
         return _selectedScenarioEvent != null &&
-               _selectedScenarioAction != null &&
-               _selectedScenarioFrequency != null &&
+               _scenarioAction != null &&
+               _scenarioFrequency != null &&
                
                //TODO check with all event types
-               ((_selectedScenarioEvent is AnimationEvent && _selectedScenarioAction.Input.IsReversalValid) || (_selectedScenarioEvent is ComboEvent && _selectedScenarioAction.Input.IsValid)) &&
+               ((_selectedScenarioEvent is AnimationEvent && _scenarioAction.Input.IsReversalValid) || (_selectedScenarioEvent is ComboEvent && _scenarioAction.Input.IsValid)) &&
                _scenario is not { IsRunning: true };
     }
 
@@ -233,12 +236,12 @@ public class ScenarioWindowViewModel : ViewModelBase
 
     private void Disable()
     {
-        this._scenario?.Stop();
+        _scenario?.Stop();
     }
 
     private bool CanDisable()
     {
-        return this._scenario?.IsRunning ?? false;
+        return _scenario?.IsRunning ?? false;
         
         
         //TODO Implement
@@ -252,13 +255,13 @@ public class ScenarioWindowViewModel : ViewModelBase
 
     private void InsertPresetInput(string input)
     {
-        if (_selectedScenarioAction is PlayReversalAction playReversal)
+        if (_scenarioAction is PlayReversalAction playReversal)
         {
             var newInput = playReversal.Input.InputText +
                            $"{(!playReversal.Input.InputText.EndsWith(",") && !string.IsNullOrWhiteSpace(playReversal.Input.InputText)  ? "," : "")}" +
                            input;
 
-            SelectedScenarioAction = new PlayReversalAction()
+            ScenarioAction = new PlayReversalAction()
                 { Input = new SlotInput(newInput), MemoryReader = playReversal.MemoryReader };
         }
     }

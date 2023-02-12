@@ -149,7 +149,7 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
-                                    <ContentControl Content="{Binding SelectedScenarioAction}">
+                                    <ContentControl Content="{Binding ScenarioAction}">
                                         <ContentControl.Resources>
                                             <DataTemplate DataType="{x:Type scenarioActionImplementations:PlayReversalAction}">
                                                 <ItemsControl>
@@ -466,7 +466,7 @@
                                 
                             </GroupBox>
                             <GroupBox Grid.Column="2" Grid.Row="0" Header="How often?">
-                                <ContentControl Content="{Binding SelectedScenarioFrequency}">
+                                <ContentControl Content="{Binding ScenarioFrequency}">
                                     <ContentControl.Resources>
                                         <DataTemplate DataType="{x:Type scenarioFrequencyImplementations:PercentageFrequency}">
                                             <Grid>
