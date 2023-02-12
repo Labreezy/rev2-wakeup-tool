@@ -46,7 +46,12 @@ public class PlayReversalAction : IScenarioAction
         switch (replayTriggerType)
         {
             case ReplayTriggerTypes.AsmInjection:
-                _replayTrigger = new AsmInjectionReplayTrigger();
+            {
+                // _replayTrigger = new AsmInjectionReplayTrigger();
+                //TODO fix asm injection
+                var replayKeyStroke = GetReplayKeyStroke();
+                _replayTrigger = new KeystrokeReplayTrigger(replayKeyStroke, MemoryReader.Process);
+            }
                 break;
             case ReplayTriggerTypes.Keystroke:
             {
