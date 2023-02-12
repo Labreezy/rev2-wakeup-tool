@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows;
 using GGXrdReversalTool.Commands;
 using GGXrdReversalTool.Library.Configuration;
 using GGXrdReversalTool.Library.Memory;
@@ -25,7 +26,7 @@ public class ScenarioWindowViewModel : ViewModelBase
 {
     private readonly IMemoryReader _memoryReader;
     private Scenario? _scenario;
-    private UpdateManager _updateManager = new();
+    private readonly UpdateManager _updateManager = new();
     public ScenarioWindowViewModel()
     {
         var process = Process.GetProcessesByName("GuiltyGearXrd").FirstOrDefault();
@@ -127,11 +128,16 @@ public class ScenarioWindowViewModel : ViewModelBase
 
     #region AboutCommand
 
-    public RelayCommand AboutCommand => new(About);
+    public RelayCommand<Window> AboutCommand => new(About);
 
-    private void About()
+    private void About(Window mainWindow)
     {
-        throw new NotImplementedException();
+        var aboutWindow = new AboutWindow
+        {
+            Owner = mainWindow
+        };
+        
+        aboutWindow.ShowDialog();
     }
     #endregion
     
