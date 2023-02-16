@@ -102,6 +102,14 @@
       <Resource Include="Images\Characters\GGXRD-R2_Zato-1_Icon.png" />
       <None Remove="Images\Characters\GGXRD-R2_Elphelt_Valentine_Icon.png" />
       <Resource Include="Images\Characters\GGXRD-R2_Elphelt_Valentine_Icon.png" />
+      <None Remove="Haehyun.png" />
+      <Resource Include="Haehyun.png" />
+      <None Remove="twitter.ico" />
+      <Resource Include="twitter.ico" />
+      <None Remove="facebook.ico" />
+      <Resource Include="facebook.ico" />
+      <None Remove="gmail.ico" />
+      <Resource Include="gmail.ico" />
     </ItemGroup>
 
 </Project>
