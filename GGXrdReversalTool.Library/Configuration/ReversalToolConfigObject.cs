@@ -53,7 +53,7 @@ public class ReversalToolConfigObject
     public string ReplayTriggerType { get; set; }
 
     [JsonPropertyName("CurrentVersion")]
-    public string CurrentVersion { get; set; }
+    public Version CurrentVersion { get; set; }
 
     [JsonPropertyName("AutoUpdate")]
     public bool AutoUpdate { get; set; }
