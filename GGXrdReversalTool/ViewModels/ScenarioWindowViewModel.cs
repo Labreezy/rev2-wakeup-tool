@@ -57,6 +57,10 @@ public class ScenarioWindowViewModel : ViewModelBase
 
     #region WindowLoadedCommand
     public RelayCommand WindowLoadedCommand =>  new(Init);
+    private void Init()
+    {
+        
+    }
     #endregion
     
     #region WindowClosedCommand
@@ -81,7 +85,10 @@ public class ScenarioWindowViewModel : ViewModelBase
             return;
         }
 
-        ReversalToolConfiguration.Set("ReplayTriggerType", parameter);
+        var config = ReversalToolConfiguration.GetConfig();
+        config.ReplayTriggerType = parameter;
+        ReversalToolConfiguration.SaveConfig(config);
+        
         _scenarioAction?.Init();
 
         OnPropertyChanged(nameof(IsAsmReplayTypeChecked));
@@ -145,10 +152,17 @@ public class ScenarioWindowViewModel : ViewModelBase
 
     public bool AutoUpdate
     {
-        get => ReversalToolConfiguration.Get("AutoUpdate") == "True";
+        get
+        {
+            var config = ReversalToolConfiguration.GetConfig();
+            return config.AutoUpdate;
+        }
         set
         {
-            ReversalToolConfiguration.Set("AutoUpdate", value ? "1" : "0");
+            var config = ReversalToolConfiguration.GetConfig();
+            config.AutoUpdate = value;
+            ReversalToolConfiguration.SaveConfig(config);
+            
 
             OnPropertyChanged();
         }
@@ -185,7 +199,7 @@ public class ScenarioWindowViewModel : ViewModelBase
     public IScenarioAction? ScenarioAction
     {
         get => _scenarioAction;
-        set
+        private set
         {
             // if (Equals(value, _selectedScenarioAction)) return;
             _scenarioAction = value;
@@ -193,17 +207,8 @@ public class ScenarioWindowViewModel : ViewModelBase
         }
     }
 
-    private IScenarioFrequency? _scenarioFrequency;
-    public IScenarioFrequency? ScenarioFrequency
-    {
-        get => _scenarioFrequency;
-        set
-        {
-            if (Equals(value, _scenarioFrequency)) return;
-            _scenarioFrequency = value;
-            OnPropertyChanged();
-        }
-    }
+    private readonly IScenarioFrequency? _scenarioFrequency;
+    public IScenarioFrequency? ScenarioFrequency => _scenarioFrequency;
 
 
     #region EnableCommand
@@ -274,26 +279,12 @@ public class ScenarioWindowViewModel : ViewModelBase
 
     private bool CanInsertPresetInput(string input)
     {
-        //TODO implement (cannot insert if scenario is running)
-        return true;
+        return _scenario is not { IsRunning: true };
     }
 
     #endregion
 
-    private void Init()
-    {
-        // var process = Process.GetProcessesByName("GuiltyGearXrd").FirstOrDefault();
-        // var memoryReader = new MemoryReader(process);
-        // // var scenarioEvent = new WakeupEvent();
-        // // var scenarioEvent = new ComboEvent();
-        // var scenarioEvent = new AnimationEvent();
-        // var scenarioAction = new PlayReversalAction();
-        // var scenarioFrequency = new PercentageFrequency(100);
-        //
-        // var scenario = new Scenario(memoryReader, scenarioEvent, scenarioAction, scenarioFrequency);
-        //
-        // scenario.Run();
-    }
+    
 
     private void Dispose()
     {

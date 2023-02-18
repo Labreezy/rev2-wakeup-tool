@@ -1,11 +1,43 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using GGXrdReversalTool.Library.Exceptions;
+using Microsoft.Extensions.Configuration;
 
 namespace GGXrdReversalTool.Library.Configuration;
 
-//TODO Refactor
 public static class ReversalToolConfiguration
 {
-    //TODO Make generic
+    public static ReversalToolConfigObject GetConfig()
+    {
+        var config = new ConfigurationBuilder()
+            .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+            .AddJsonFile("appsettings.json")
+            .Build()
+            .Get<ReversalToolConfigObject>();
+
+
+        if (config == null)
+        {
+            throw new InvalidConfigurationException();
+        }
+
+        return config;
+    }
+
+    public static void SaveConfig(ReversalToolConfigObject configObject)
+    {
+        var jsonWriteOptions = new JsonSerializerOptions()
+        {
+            WriteIndented = true
+        };
+        jsonWriteOptions.Converters.Add(new JsonStringEnumConverter());
+
+        var newJson = JsonSerializer.Serialize(configObject, jsonWriteOptions);
+        
+        var appSettingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+        File.WriteAllText(appSettingsPath, newJson);
+    }
+    
     public static string Get(string key)
     {
         var configuration =  new ConfigurationBuilder()
@@ -16,18 +48,4 @@ public static class ReversalToolConfiguration
         return config.GetSection(key).Value ?? "";
     }
 
-    public static void Set(string key, object value)
-    {
-        //TODO Implement
-        
-        
-        // var configuration =  new ConfigurationBuilder()
-        //     .AddJsonFile($"appsettings.json");
-        //     
-        // var config = configuration.Build();
-
-        // configuration.Properties.
-        
-        
-    }
 }
