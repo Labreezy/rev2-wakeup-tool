@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using GGXrdReversalTool.Contributors;
 
 namespace GGXrdReversalTool.ViewModels;
