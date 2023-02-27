@@ -104,12 +104,12 @@ public class SlotInput
 
     private ushort SingleInputParse(string singleInput)
     {
-        Regex inputregex = new Regex(WakeUpFrameDelimiter + @"?[1-9]{1}[PKSHD]{0,5}");
+        Regex inputRegex = new Regex(WakeUpFrameDelimiter + @"?[1-9]{1}[PKSHD]{0,5}");
 
         //TODO Replace by Enum Directions?
         int[] directions = { 0b0110, 0b0010, 0b1010, 0b0100, 0b0000, 0b1000, 0b0101, 0b0001, 0b1001 };
 
-        if (inputregex.IsMatch(singleInput))
+        if (inputRegex.IsMatch(singleInput))
         {
             var result = 0;
             if (singleInput[0] == WakeUpFrameDelimiter)

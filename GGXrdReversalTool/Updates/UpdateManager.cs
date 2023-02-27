@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using GGXrdReversalTool.Library.Configuration;
 using GGXrdReversalTool.Library.GitHub;
+using GGXrdReversalTool.Library.Logging;
 using GGXrdReversalTool.Library.Versioning;
 
 namespace GGXrdReversalTool.Updates;
@@ -36,8 +36,7 @@ public class UpdateManager
         }
         catch (Exception)
         {
-            //TODO Inject logManager
-            // LogManager.Instance.WriteLine("Failed to check for updates");
+            LogManager.Instance.WriteLine("Failed to check for updates");
             throw;
         }
     }
@@ -69,8 +68,7 @@ public class UpdateManager
 
         foreach (var fileName in Directory.GetFiles(currentDirectory))
         {
-            //TODO refactor!
-            var logManagerFileName = "Log.txt";
+            var logManagerFileName = LogManager.Instance.FileName;
             if (!fileName.EndsWith(logManagerFileName))
             {
                 FileInfo fi = new FileInfo(fileName);

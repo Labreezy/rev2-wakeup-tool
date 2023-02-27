@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using GGXrdReversalTool.Library.Logging;
 using GGXrdReversalTool.Library.Versioning;
 
 namespace GGXrdReversalTool.Library.GitHub;
@@ -42,9 +43,8 @@ public class GitHubClient
         }
         catch (Exception e)
         {
-            //TODO Inject logmanager
-            // LogManager.Instance.WriteLine("Failed to get LatestVersion");
-            // LogManager.Instance.WriteException(e);
+            LogManager.Instance.WriteLine("Failed to get LatestVersion");
+            LogManager.Instance.WriteException(e);
             throw;
         }
     }
