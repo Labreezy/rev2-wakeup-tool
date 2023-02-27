@@ -1,4 +1,5 @@
 ﻿using GGXrdReversalTool.Library.Characters;
+using GGXrdReversalTool.Library.Logging;
 using GGXrdReversalTool.Library.Memory;
 using GGXrdReversalTool.Library.Models;
 using GGXrdReversalTool.Library.Models.Inputs;
@@ -61,8 +62,7 @@ public class Scenario : IDisposable
 
         Thread scenarioThread = new Thread(() =>
         {
-            //TODO Inject LogManager
-            // LogManager.Instance.WriteLine("Scenario Thread start");
+            LogManager.Instance.WriteLine("Scenario Thread start");
             bool localRunThread = true;
 
 
@@ -71,9 +71,7 @@ public class Scenario : IDisposable
                 var eventType = _scenarioEvent.CheckEvent();
                 if (eventType != ScenarioEventTypes.None)
                 {
-                    //TODO logManager
-
-                    Console.WriteLine("Event Occured");
+                    LogManager.Instance.WriteLine("Event Occured");
                     
                     //TODO should remove from loop?
                     var currentDummy = _memoryReader.GetCurrentDummy();
@@ -83,14 +81,16 @@ public class Scenario : IDisposable
 
                     Wait(timing);
 
-                    var shouldExecuteAction = _scenarioFrequency.ShouldHappen();
+                    //TODO fix event frquency
+                    //var shouldExecuteAction = _scenarioFrequency.ShouldHappen();
+
+                    var shouldExecuteAction = true;
 
                     if (shouldExecuteAction)
                     {
                         _scenarioAction.Execute();
                         
-                        //TODO LogManager
-                        Console.WriteLine("Action Executed");
+                        LogManager.Instance.WriteLine("Action Executed");
                     }
                 }
                 
@@ -106,8 +106,7 @@ public class Scenario : IDisposable
             }
 
 
-            //TODO Inject LogManager
-            // LogManager.Instance.WriteLine("Scenario Thread ended");
+            LogManager.Instance.WriteLine("Scenario Thread ended");
         });
 
         scenarioThread.Start();
@@ -138,7 +137,7 @@ public class Scenario : IDisposable
             case ScenarioEventTypes.WallSplat:
                 return currentDummy.WallSplatWakeupTiming - scenarioActionInput.ReversalFrameIndex - 2;
             case ScenarioEventTypes.Blocking:
-                throw new NotImplementedException();
+                return 0;
             case ScenarioEventTypes.Combo:
                 return 0;
             case ScenarioEventTypes.Tech:

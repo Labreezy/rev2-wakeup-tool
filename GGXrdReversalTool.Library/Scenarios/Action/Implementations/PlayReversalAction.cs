@@ -1,5 +1,6 @@
 ﻿using GGXrdReversalTool.Library.Configuration;
 using GGXrdReversalTool.Library.Input;
+using GGXrdReversalTool.Library.Logging;
 using GGXrdReversalTool.Library.Memory;
 using GGXrdReversalTool.Library.Models;
 using GGXrdReversalTool.Library.Models.Inputs;
@@ -28,8 +29,7 @@ public class PlayReversalAction : IScenarioAction
 
     public void Execute()
     {
-        //TODO Log manager
-        Console.WriteLine("Execute!");
+        LogManager.Instance.WriteLine("PlayReversalAction Execute!");
         _replayTrigger?.Trigger();
     }
 

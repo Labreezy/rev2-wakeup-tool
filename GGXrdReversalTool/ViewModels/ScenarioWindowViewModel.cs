@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using GGXrdReversalTool.Commands;
 using GGXrdReversalTool.Library.Configuration;
+using GGXrdReversalTool.Library.Logging;
 using GGXrdReversalTool.Library.Memory;
 using GGXrdReversalTool.Library.Memory.Implementations;
 using GGXrdReversalTool.Library.Models;
@@ -27,6 +29,7 @@ public class ScenarioWindowViewModel : ViewModelBase
     private readonly IMemoryReader _memoryReader;
     private Scenario? _scenario;
     private readonly UpdateManager _updateManager = new();
+    private readonly StringBuilder _logStringBuilder = new();
     public ScenarioWindowViewModel()
     {
         var process = Process.GetProcessesByName("GuiltyGearXrd").FirstOrDefault();
@@ -34,12 +37,17 @@ public class ScenarioWindowViewModel : ViewModelBase
 #if !DEBUG
         if (process == null)
         {
-            //TODO explicit error
-            throw new NotImplementedException();
+            string message =
+                "Guilty Gear not found open!  Remember, be in training mode paused when you open this program.  This program will now close.";
+            LogManager.Instance.WriteLine(message);
+            MessageBox.Show(message);
+            Application.Current.Shutdown();
         }
 #endif
+        
+        LogManager.Instance.MessageDequeued += InstanceOnMessageDequeued;
 
-        _memoryReader = new MemoryReader(process);
+        _memoryReader = new MemoryReader(process!);
 
         _scenarioEvents = new ObservableCollection<IScenarioEvent>(new IScenarioEvent[]
         {
@@ -48,9 +56,15 @@ public class ScenarioWindowViewModel : ViewModelBase
         });
 
 
-        _scenarioAction = new PlayReversalAction() { Input = new SlotInput() };
+        _scenarioAction = new PlayReversalAction { Input = new SlotInput() };
         _scenarioFrequency = new PercentageFrequency();
 
+    }
+
+    private void InstanceOnMessageDequeued(object? sender, string e)
+    {
+        _logStringBuilder.AppendLine(e);
+        OnPropertyChanged(nameof(LogText));
     }
 
     #region Window
@@ -75,6 +89,10 @@ public class ScenarioWindowViewModel : ViewModelBase
     #region WindowClosedCommand
 
     public RelayCommand WindowClosedCommand => new(Dispose);
+    private void Dispose()
+    {
+        _scenario?.Stop();
+    }
     #endregion
 
     #endregion
@@ -294,11 +312,8 @@ public class ScenarioWindowViewModel : ViewModelBase
     #endregion
 
     
-
-    private void Dispose()
-    {
-        _scenario?.Stop();
-    }
+    public string LogText => _logStringBuilder.ToString();
+    
 
     private void UpdateProcess(bool confirm = false)
     {
@@ -310,15 +325,13 @@ public class ScenarioWindowViewModel : ViewModelBase
                 var config = ReversalToolConfiguration.GetConfig();
                 var currentVersion = config.CurrentVersion;
                 
-                //TODO LogManager
-                // LogManager.Instance.WriteLine($"Current Version is {currentVersion}");
+                LogManager.Instance.WriteLine($"Current Version is {currentVersion}");
                 
                 
                 switch (Math.Sign(currentVersion.CompareTo(latestVersion.Version)))
                 {
                     case 0:
-                        //TODO LogManager
-                        // LogManager.Instance.WriteLine("No updates");
+                        LogManager.Instance.WriteLine("No updates");
                         if (confirm)
                         {
                             MessageBox.Show($"Your version is up to date.\r\nYour version : \t {currentVersion}");
@@ -331,8 +344,7 @@ public class ScenarioWindowViewModel : ViewModelBase
                                 $"A new version is available ({latestVersion.Version})\r\bDo you want do download it?",
                                 "New version available", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                         {
-                            //TODO LogManager
-                            // LogManager.Instance.WriteLine($"Found new version : v{latestVersion.Version}");
+                            LogManager.Instance.WriteLine($"Found new version : v{latestVersion.Version}");
                             bool downloadSuccess = _updateManager.DownloadUpdate(latestVersion);
                 
                             if (downloadSuccess)
@@ -349,8 +361,7 @@ public class ScenarioWindowViewModel : ViewModelBase
                 
                         break;
                     case 1:
-                        //TODO LogManager
-                        // LogManager.Instance.WriteLine("No updates");
+                        LogManager.Instance.WriteLine("No updates");
                         if (confirm)
                         {
                             MessageBox.Show(
@@ -362,8 +373,7 @@ public class ScenarioWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            //TODO inject logmanager
-            // LogManager.Instance.WriteException(ex);
+            LogManager.Instance.WriteException(ex);
         }
     }
 }

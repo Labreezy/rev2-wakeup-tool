@@ -13,12 +13,12 @@ public class AnimationEventConverter : IMultiValueConverter
         var shouldCheckWakingUp = (bool)values[0];
         var shouldCheckWallSplat = (bool)values[1];
         var shouldCheckAirTech = (bool)values[2];
+        var shouldCheckStartBlocking = (bool)values[3];
 
 
-        if (!shouldCheckWakingUp && !shouldCheckWallSplat && !shouldCheckAirTech)
+        if (!shouldCheckWakingUp && !shouldCheckWallSplat && !shouldCheckAirTech && !shouldCheckStartBlocking)
         {
-            //TODO implement new property : actionInvalid
-            return "!!!! check nothing";
+            return "Event is invalid!!!";
         }
 
 
@@ -27,7 +27,8 @@ public class AnimationEventConverter : IMultiValueConverter
         {
             shouldCheckWakingUp ? "wakes up" : "",
             shouldCheckWallSplat ? "recovers from wall splat" : "",
-            shouldCheckAirTech ? "recovers from air tech" : ""
+            shouldCheckAirTech ? "recovers from air tech" : "",
+            shouldCheckStartBlocking ? "is starting to block" : ""
         };
 
         var result = "Dummy ";

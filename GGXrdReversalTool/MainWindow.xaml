@@ -124,6 +124,7 @@
                                                                 <Binding Path="ShouldCheckWakingUp"/>
                                                                 <Binding Path="ShouldCheckWallSplat"/>
                                                                 <Binding Path="ShouldCheckAirTech"/>
+                                                                <Binding Path="ShouldCheckStartBlocking"/>
                                                             </MultiBinding>
                                                         </TextBlock.Text>
                                                     </TextBlock>
@@ -136,6 +137,7 @@
                                                         <CheckBox Content="Waking up" IsChecked="{Binding ShouldCheckWakingUp}"/>
                                                         <CheckBox Content="Wallsplat recovering" IsChecked="{Binding ShouldCheckWallSplat}"/>
                                                         <CheckBox Content="Air Teching" IsChecked="{Binding ShouldCheckAirTech}"/>
+                                                        <CheckBox Content="Start Blocking" IsChecked="{Binding ShouldCheckStartBlocking}"/>
                                                     </WrapPanel>
                                                 </Grid>
                                             </DataTemplate>
@@ -492,11 +494,13 @@
                     </GroupBox>
                 </DockPanel>
             </TabItem>
-            <TabItem Header="Import/Export">
+            <TabItem Header="Import/Export" IsEnabled="False">
                 <Grid Background="#FFE5E5E5"/>
             </TabItem>
             <TabItem Header="Log">
-                <Grid Background="#FFE5E5E5"/>
+                <DockPanel>
+                    <TextBox Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"/>
+                </DockPanel>
             </TabItem>
         </TabControl>
     </Grid>
