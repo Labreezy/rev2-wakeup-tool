@@ -11,19 +11,21 @@ public class ComboEvent : IScenarioEvent
 
     private int _oldComboCount;
 
-    public ScenarioEventTypes CheckEvent()
+    public bool IsValid => MinComboCount <= MaxComboCount;
+
+    public AnimationEventTypes CheckEvent()
     {
         var comboCount = MemoryReader.GetComboCount(1);
 
         if (comboCount >= MinComboCount && comboCount<= MaxComboCount && _oldComboCount != comboCount)
         {
             _oldComboCount = comboCount;
-            return ScenarioEventTypes.Combo;
+            return AnimationEventTypes.Combo;
         }
 
         _oldComboCount = comboCount;
 
-        return ScenarioEventTypes.None;
+        return AnimationEventTypes.None;
     }
 
 }

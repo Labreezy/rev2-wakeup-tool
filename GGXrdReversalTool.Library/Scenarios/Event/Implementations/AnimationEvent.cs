@@ -17,25 +17,23 @@ public class AnimationEvent : IScenarioEvent
     public bool ShouldCheckWakingUp { get; set; } = true;
     public bool ShouldCheckWallSplat { get; set; } = true;
     public bool ShouldCheckAirTech { get; set; } = false;
-
     public bool ShouldCheckStartBlocking { get; set; } = false;
 
+    public bool IsValid =>
+        ShouldCheckWakingUp || ShouldCheckWallSplat || ShouldCheckAirTech || ShouldCheckStartBlocking;
 
-    private string _oldAnimation = "";
-    public ScenarioEventTypes CheckEvent()
+    public AnimationEventTypes CheckEvent()
     {
         var animationString = MemoryReader.ReadAnimationString(2);
 
-        _oldAnimation = animationString;
-
         return animationString switch
         {
-            FaceDownAnimation when ShouldCheckWakingUp => ScenarioEventTypes.KDFaceDown,
-            FaceUpAnimation when ShouldCheckWakingUp => ScenarioEventTypes.KDFaceUp,
-            WallSplatAnimation when ShouldCheckWallSplat => ScenarioEventTypes.WallSplat,
-            TechAnimation when ShouldCheckAirTech => ScenarioEventTypes.Tech,
-            CrouchBlockingAnimation or StandBlockingAnimation or HighBlockingAnimation when ShouldCheckStartBlocking => ScenarioEventTypes.Blocking,
-            _ => ScenarioEventTypes.None
+            FaceDownAnimation when ShouldCheckWakingUp => AnimationEventTypes.KDFaceDown,
+            FaceUpAnimation when ShouldCheckWakingUp => AnimationEventTypes.KDFaceUp,
+            WallSplatAnimation when ShouldCheckWallSplat => AnimationEventTypes.WallSplat,
+            TechAnimation when ShouldCheckAirTech => AnimationEventTypes.Tech,
+            CrouchBlockingAnimation or StandBlockingAnimation or HighBlockingAnimation when ShouldCheckStartBlocking => AnimationEventTypes.Blocking,
+            _ => AnimationEventTypes.None
         };
     }
     

@@ -7,14 +7,19 @@ using GGXrdReversalTool.Library.Models.Inputs;
 
 namespace GGXrdReversalTool.Converters;
 
-[ValueConversion(typeof(string),typeof(IEnumerable<string>))]
+[ValueConversion(typeof(string),typeof(IEnumerable<CondensedInput>))]
 public class InputConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object parameter, CultureInfo culture)
     {
-        SlotInput slotInput = new SlotInput(value?.ToString() ?? "");
+        if (value == null)
+        {
+            return Enumerable.Empty<CondensedInput>();
+        }
+        
+        var slotInput = new SlotInput(value.ToString() ?? "");
 
-        return !slotInput.IsValid ? Enumerable.Empty<string>() : slotInput.InputSplit;
+        return slotInput.CondensedInputList;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
