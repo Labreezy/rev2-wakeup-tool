@@ -194,13 +194,11 @@ public class ScenarioWindowViewModel : ViewModelBase
     
     #region DonateCommand
 
-    public RelayCommand DonateCommand => new(Donate);
+    public RelayCommand<string> DonateCommand => new(Donate);
 
-    private void Donate()
+    private void Donate(string target)
     {
-        string target = "https://paypal.me/Iquisiquis";
         Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
-
     }
 
     #endregion
