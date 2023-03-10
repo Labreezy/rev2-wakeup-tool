@@ -110,6 +110,12 @@
       <Resource Include="facebook.ico" />
       <None Remove="gmail.ico" />
       <Resource Include="gmail.ico" />
+      <None Remove="ko-fi.png" />
+      <Resource Include="ko-fi.png" />
+      <None Remove="patreon.png" />
+      <Resource Include="patreon.png" />
+      <None Remove="paypal.ico" />
+      <Resource Include="paypal.ico" />
     </ItemGroup>
 
 </Project>

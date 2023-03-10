@@ -8,6 +8,11 @@
              d:DesignHeight="30" d:DesignWidth="800"
              x:Name="Menu"
              >
+    <UserControl.Resources>
+        <Image x:Shared="False" x:Key="Paypal" Source="../paypal.ico"/>
+        <Image x:Shared="False" x:Key="Ko-Fi" Source="../ko-fi.png"/>
+        <Image x:Shared="False" x:Key="Patreon" Source="../patreon.png"/>
+    </UserControl.Resources>
     <Menu IsMainMenu="True">
         <Menu.ItemsPanel>
             <ItemsPanelTemplate>
@@ -32,6 +37,10 @@
         <MenuItem Header="_Help">
             <MenuItem Header="_About" Command="{Binding ElementName=Menu, Path=AboutCommand}" CommandParameter="{Binding ElementName=Menu, Path=MainWindow}"/>
         </MenuItem>
-        <MenuItem Header="Donate" Command="{Binding ElementName=Menu, Path=DonateCommand}" HorizontalAlignment="Right"/>
+        <MenuItem Header="Donate" HorizontalAlignment="Right">
+            <MenuItem Header="Paypal" Command="{Binding ElementName=Menu, Path=DonateCommand}" CommandParameter="https://paypal.me/Iquisiquis" Icon="{StaticResource Paypal}"/>
+            <MenuItem Header="Ko-fi" Command="{Binding ElementName=Menu, Path=DonateCommand}" CommandParameter="https://ko-fi.com/iquis" Icon="{StaticResource Ko-Fi}"/>
+            <MenuItem Header="Patreon" Command="{Binding ElementName=Menu, Path=DonateCommand}" CommandParameter="https://www.patreon.com/Iquis" Icon="{StaticResource Patreon}"/>
+        </MenuItem>
     </Menu>
 </UserControl>
